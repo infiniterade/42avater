@@ -1,9 +1,16 @@
-# 42GRAM アバター（IID Punks Avatars）
+# 42gAvaterMaker（42GRAM のアバター）
 
 42GRAM のアバター NFT です。IID Punks のドット絵のパーツから選んで作り、**CAW NAME 1つにつき1体**、無料でミントできます。
 絵はチェーン上に置いたパーツから、表示のたびにコントラクトが SVG に組み立てます。
 
 > **未監査・実験版です。** コントラクトは第三者の監査を受けていません。デプロイ前に監査を受けてください。
+
+## コレクション名（デプロイ後は変更不可）
+
+| コントラクト | 名前 | 記号 | 1つずつの名前 |
+| --- | --- | --- | --- |
+| `IIDPunksAvatars`（ERC-721） | 42gAvaterMaker | 42AM | 42gAvaterMaker #1、#2… |
+| `IIDPunksItems`（ERC-1155） | 42AM_SpecialItems | 42AMSI | アイテム名（Wizard Hat など） |
 
 ## しくみ
 
@@ -43,7 +50,7 @@ node tools/test_keccak.js         # lookHash に使う keccak256
 node tools/test_onchain.js        # コントラクトと同じ手順の描画 == エンジン（2万体）
 node tools/test_items.js          # 特別アイテムを付けても一致・記録は不変
 forge build --sizes
-forge test -vvv                   # 21件
+forge test -vvv                   # 22件
 node maker/build.js               # メーカーのページ
 ```
 

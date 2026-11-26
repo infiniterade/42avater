@@ -100,6 +100,14 @@ contract AvatarsTest is Test {
     }
 
     // ---------------- mint with CAW NAME ----------------
+    function test_CollectionNames() public {
+        assertEq(avatars.name(), "42gAvaterMaker");
+        assertEq(avatars.symbol(), "42AM");
+        assertEq(items.name(), "42AM_SpecialItems");
+        assertEq(items.symbol(), "42AMSI");
+        assertEq(avatars.NAME(), "42gAvaterMaker");
+    }
+
     function test_Mint() public {
         uint256 id = _mint(alice, 7, 0);
         assertEq(id, 1);

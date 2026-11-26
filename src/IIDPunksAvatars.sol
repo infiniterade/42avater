@@ -400,6 +400,10 @@ contract IIDPunksItems is ERC1155, Ownable {
     event ItemAdded(uint256 indexed id, uint8 slot, string name);
     event LaunchClaimed(uint256 indexed avatarId, address indexed to);
 
+    /// Collection name and symbol shown by marketplaces and wallets (fixed at deploy).
+    string public constant name = "42AM_SpecialItems";
+    string public constant symbol = "42AMSI";
+
     constructor(IIDPunksRenderer r) ERC1155("") Ownable(msg.sender) { renderer = r; }
 
     function setAvatars(address a) external onlyOwner {
@@ -480,7 +484,7 @@ contract IIDPunksItems is ERC1155, Ownable {
         require(it.data != address(0), "no item");
         string[6] memory slotNames = [string("Hat"), "Eyes", "Mouth", "Neck", "Background", "Hair Color"];
         bytes memory json = abi.encodePacked(
-            '{"name":"', it.name, '","description":"Special item for IID Punks Avatars.","image":"data:image/svg+xml;base64,',
+            '{"name":"', it.name, '","description":"Special item for 42gAvaterMaker avatars.","image":"data:image/svg+xml;base64,',
             Base64.encode(bytes(renderer.itemSvg(SSTORE2.read(it.data)))),
             '","attributes":[{"trait_type":"Slot","value":"', slotNames[it.slot], '"}]}'
         );
@@ -513,8 +517,9 @@ contract IIDPunksAvatars is ERC721, Ownable, EIP712 {
     uint256 public price;
     uint256 public immutable maxSupply;
     uint256 public totalSupply;
-    string public constant NAME = "IID Punks Avatar";
-    string public constant DESCRIPTION = "Pixel avatars built from IID Punks parts. Fully on-chain. $IIDP";
+    string public constant NAME = "42gAvaterMaker";
+    string public constant DESCRIPTION =
+        "Pixel avatars for 42GRAM, made from IID Punks parts. One per CAW NAME. Fully on-chain.";
 
     mapping(uint256 => bytes) private _record;
     mapping(bytes32 => bool) public lookTaken;            // a minted picture exists only once
@@ -526,7 +531,7 @@ contract IIDPunksAvatars is ERC721, Ownable, EIP712 {
     event MintedWithCaw(uint256 indexed avatarId, uint256 indexed cawId, address indexed to);
 
     constructor(IIDPunksRenderer r, IIDPunksItems it, address signer_, uint256 price_, uint256 maxSupply_)
-        ERC721("IID Punks Avatars", "IIDPA") Ownable(msg.sender) EIP712("IIDPunksAvatars", "1")
+        ERC721("42gAvaterMaker", "42AM") Ownable(msg.sender) EIP712("IIDPunksAvatars", "1")
     {
         renderer = r;
         itemsContract = it;
