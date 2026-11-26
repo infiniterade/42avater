@@ -1,0 +1,25 @@
+# IID Punks Avatars for 42GRAM: its own Foundry project, sharing the repository's lib/ (forge-std, OpenZeppelin).
+[profile.default]
+src = "src"
+test = "test"
+out = "out"
+libs = ["../lib"]
+allow_paths = ["../lib"]
+solc_version = "0.8.30"
+evm_version = "cancun"
+via_ir = true
+optimizer = true
+optimizer_runs = 200
+# tokenURI composes the SVG on chain; the tests call it many times.
+gas_limit = 9223372036854775807
+fs_permissions = [{ access = "read", path = "./data" }]
+remappings = [
+    "forge-std/=../lib/forge-std/src/",
+    "@openzeppelin/contracts/=../lib/openzeppelin-contracts/contracts/",
+]
+
+[profile.ci.fuzz]
+runs = 1000
+
+[fmt]
+line_length = 110

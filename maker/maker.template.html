@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>42gAvaterMaker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: playful, confident, arcade.
+   IDEA: a character-select screen of an old game console - pick parts, your punk appears on the big screen.
+   PICTURE: the live avatar on a big slate screen with a hard pixel shadow; the maker itself is the hero.
+   COLOUR and TYPE: slate screen #9AA0A6 (the collection's own preview grey), paper white, ink #1B1B1B outlines, hot pink #FF5FB0 accent, gold #F2C230 for the DNA. DotGothic16 + Noto Sans JP.
+   LAYOUT: header, maker band (screen left, part picker right), how-it-works band, gallery band, FAQ, footer with 42GRAM link. */
+:root{color-scheme:light;--bg:#F4F1EA;--paper:#FFFFFF;--ink:#1B1B1B;--dim:#5E646B;--slate:#9AA0A6;--slate2:#7C838B;--pink:#FF5FB0;--gold:#F2C230;--blue:#2F7BFF;--line:#1B1B1B}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark;--bg:#202328;--paper:#2A2E34;--ink:#F1F2F4;--dim:#A9AFB7;--line:#0B0C0E}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:72px;scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Noto Sans JP",system-ui,sans-serif;overflow-x:clip}
+.px{font-family:"DotGothic16","Noto Sans JP",monospace;letter-spacing:.02em}
+a{color:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 max(4vw,16px)}
+/* header */
+header{position:sticky;top:0;z-index:5;background:var(--ink);color:#fff;border-bottom:4px solid var(--pink)}
+header .wrap{display:flex;align-items:center;gap:18px;min-height:60px;flex-wrap:wrap}
+.logo{font-size:22px;text-decoration:none;display:flex;align-items:center;gap:10px;color:#fff}
+.logo svg{width:34px;height:34px;background:var(--slate);border:2px solid #fff}
+.logo b{color:var(--pink);font-weight:400}
+header nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap;align-items:center}
+header nav a{text-decoration:none;padding:8px 10px;font-size:15px;color:#fff}
+header nav a:hover{color:var(--gold)}
+.btn{font:inherit;font-family:"DotGothic16","Noto Sans JP",monospace;font-size:16px;color:var(--ink);background:var(--paper);border:3px solid var(--line);padding:9px 14px;min-height:44px;cursor:pointer;box-shadow:4px 4px 0 var(--line);text-decoration:none;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--line)}
+.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--line)}
+.btn:focus-visible,.opt:focus-visible,.sw button:focus-visible,.tabs button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.btn.pink{background:var(--pink);color:#111}
+.btn.gold{background:var(--gold);color:#111}
+.btn[disabled],.btn.off{opacity:.55;cursor:not-allowed;transform:none}
+header .btn{box-shadow:3px 3px 0 var(--pink);border-color:#fff;background:var(--ink);color:#fff;min-height:40px;padding:6px 12px}
+/* maker */
+.maker{background:var(--slate);border-bottom:4px solid var(--line);padding:clamp(20px,3vw,40px) 0 clamp(28px,4vw,56px);
+  background-image:linear-gradient(rgba(255,255,255,.07) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.07) 2px,transparent 2px);background-size:24px 24px}
+.maker h1{font-size:clamp(30px,4.4vw,48px);line-height:1.05;margin:0 0 6px;color:#111;text-wrap:balance;font-weight:400}
+.maker .lead{margin:0 0 20px;color:#16181B;max-width:none;word-break:auto-phrase;text-wrap:pretty}
+.mgrid{display:grid;grid-template-columns:minmax(280px,440px) minmax(0,1fr);grid-template-areas:"screen picker" "under picker";grid-template-rows:auto 1fr;column-gap:clamp(18px,2.6vw,36px);align-items:start}
+.screen{grid-area:screen}.under{grid-area:under}.picker{grid-area:picker;align-self:start}
+@media (max-width:900px){.mgrid{grid-template-columns:minmax(0,1fr);grid-template-areas:"screen" "picker" "under";row-gap:22px}.picker{max-height:70vh}}
+.maker h1{word-break:auto-phrase}
+.screen{position:relative;--ck:#B4B9BF;background:#C9CDD2 conic-gradient(var(--ck) 25%,transparent 0 50%,var(--ck) 0 75%,transparent 0) 0 0/8.333% 8.333%;border:4px solid var(--line);box-shadow:10px 10px 0 var(--line);aspect-ratio:1}
+.screen svg{width:100%;height:100%;display:block}
+.under{margin-top:26px;display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.card{background:var(--paper);border:3px solid var(--line);box-shadow:4px 4px 0 var(--line);padding:12px 14px}
+.card h3{margin:0 0 6px;font-size:14px;font-weight:700;color:var(--dim)}
+.dna{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;word-break:break-all;background:#15171B;color:var(--gold);padding:8px 10px;border:2px solid var(--line)}
+.dnaIn{flex:1;font:16px ui-monospace,Menlo,monospace;border:3px solid var(--line);padding:8px;min-height:44px;background:var(--paper);color:var(--ink)}
+dl.attrs{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 14px;margin:0;font-size:14px}
+dl.attrs dt{color:var(--dim)}dl.attrs dd{margin:0;font-weight:700}
+.picker{background:var(--paper);border:4px solid var(--line);box-shadow:10px 10px 0 var(--line);display:flex;flex-direction:column;max-height:calc(100vh - 110px);min-height:520px}
+@media (max-width:900px){.picker{min-height:0}}
+@media (max-width:600px){header{position:static}header nav a:not(.btn){display:none}header .wrap{flex-wrap:nowrap}}
+.mstat{border:3px solid var(--line);padding:8px 12px;font-size:14px;background:var(--paper);color:var(--dim)}
+.mstat.taken{background:#FFE1E1;color:#8A1020;font-weight:700}
+.mstat.free{background:#E3F7E5;color:#14612A;font-weight:700}
+.tabs button.sp{color:var(--gold)}
+.tabs button.sp.on{color:#111;background:var(--gold)}
+.opt .pr{font-size:12px;color:var(--dim)}
+.opt.on .pr{color:#111}
+.opt[disabled]{opacity:.4;cursor:not-allowed}
+.spnote{background:#FFF7D6;border:3px solid var(--line);padding:10px 12px;margin-bottom:16px;font-size:14px;color:#2a2a2a}
+.eqlist{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none;font-size:14px}
+.eqlist li{border:2px solid var(--line);padding:2px 8px;background:var(--gold);color:#111}
+.tabs{display:flex;flex-wrap:wrap;flex:none;border-bottom:3px solid var(--line);background:var(--ink)}
+.tabs button{flex:1 0 auto;border-bottom:2px solid #000;margin-bottom:-2px;font-family:"DotGothic16","Noto Sans JP",monospace;font-size:15px;background:transparent;color:#fff;border:0;border-right:2px solid #000;padding:12px 14px;min-height:44px;cursor:pointer}
+.tabs button.on{background:var(--pink);color:#111}
+.tabs button.na{color:#777}
+.pane{padding:16px 18px 22px;overflow:auto;flex:1 1 auto;min-height:0}
+.group{margin-bottom:18px}
+.group h4{margin:0 0 8px;font-size:14px;color:var(--dim)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+.opt{background:var(--paper);border:3px solid var(--line);padding:4px;cursor:pointer;text-align:center;font:inherit;color:var(--ink)}
+.opt:hover{border-color:var(--pink)}
+.opt.on{background:var(--pink);color:#111}
+.opt .th{background:var(--slate);aspect-ratio:1;border:2px solid var(--line)}
+.opt .th svg{width:100%;height:100%;display:block}
+.opt .nm{font-size:13px;line-height:1.2;margin-top:4px;min-height:2.4em;display:flex;align-items:center;justify-content:center}
+.sw{display:flex;flex-wrap:wrap;gap:8px}
+.sw button{font:inherit;font-size:14px;display:flex;align-items:center;gap:6px;padding:6px 10px 6px 6px;min-height:44px;background:var(--paper);color:var(--ink);border:3px solid var(--line);cursor:pointer}
+.sw button.on{background:var(--gold);color:#111}
+.sw i{width:24px;height:24px;border:2px solid var(--line);display:inline-block}
+.note{border:3px dashed var(--line);padding:16px;color:var(--dim)}
+/* sections */
+.band{padding:clamp(36px,5vw,72px) 0;border-bottom:4px solid var(--line)}
+.band h2{font-size:clamp(28px,3.4vw,40px);line-height:1.1;margin:0 0 10px;font-weight:400;text-wrap:balance;word-break:auto-phrase}
+.band .sub{margin:0 0 26px;color:var(--dim);max-width:66ch}
+.gift{margin:18px 0 0;background:var(--pink);color:#111;border:3px solid var(--line);box-shadow:6px 6px 0 var(--line);padding:16px 20px;font-size:clamp(17px,2vw,20px);font-weight:700;line-height:1.6;max-width:760px;word-break:auto-phrase;text-wrap:pretty}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;counter-reset:s}
+@media (max-width:760px){.steps{grid-template-columns:minmax(0,1fr)}}
+.step{background:var(--paper);border:3px solid var(--line);box-shadow:6px 6px 0 var(--line);padding:18px}
+.step .ico{height:96px;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--slate);border:3px solid var(--line);margin-bottom:14px;font-family:ui-monospace,Menlo,monospace;font-size:13px;color:#111}
+.step .ico svg{height:78px;width:78px}
+.step h3{margin:0 0 6px;font-size:20px;font-weight:400}
+.step p{margin:0;font-size:15px}
+.figs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:30px;border:3px solid var(--line);background:var(--paper)}
+@media (max-width:760px){.figs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.fig1{padding:14px 16px;border-right:3px solid var(--line)}
+.fig1:last-child{border-right:0}
+@media (max-width:760px){.fig1:nth-child(2){border-right:0}.fig1:nth-child(-n+2){border-bottom:3px solid var(--line)}}
+.fig1 b{display:block;font-family:"DotGothic16",monospace;font-weight:400;font-size:clamp(26px,3vw,36px);line-height:1.1;white-space:nowrap}
+.fig1 span{font-size:14px;color:var(--dim)}
+.gallery{background:var(--ink);color:#fff}
+.gallery .sub{color:#C9CED4}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px}
+.gal button{padding:0;border:3px solid #000;background:var(--slate);cursor:pointer;aspect-ratio:1;box-shadow:4px 4px 0 var(--pink)}
+.gal button:hover{transform:translate(-2px,-2px)}
+.gal svg{width:100%;height:100%;display:block}
+.faq details{background:var(--paper);border:3px solid var(--line);margin-bottom:10px}
+.faq summary{cursor:pointer;padding:14px 16px;font-weight:700;min-height:44px}
+.faq details p{margin:0;padding:0 16px 16px;max-width:72ch}
+.cta{background:var(--pink);color:#111;text-align:center}
+.cta h2{margin-bottom:8px}
+.cta .row{justify-content:center;margin-top:16px}
+footer{background:var(--ink);color:#C9CED4;padding:28px 0;font-size:14px}
+footer .wrap{display:flex;gap:16px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+footer a{color:#fff}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--gold);color:#111;padding:10px 16px;border:3px solid var(--line);box-shadow:4px 4px 0 var(--line);font-family:"DotGothic16",monospace;display:none;z-index:20}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="logo px" href="#make"><span id="logoPunk"></span><span>42g<b>Avater</b>Maker</span></a>
+    <nav class="px">
+      <a href="#make">つくる</a><a href="#gallery">ギャラリー</a><a href="#faq">FAQ</a>
+      <a class="btn gram" data-gram>42GRAM</a>
+    </nav>
+  </div>
+</header>
+
+<section class="maker" id="make">
+  <div class="wrap">
+    <h1 class="px">42GRAMのアバターをつくろう。</h1>
+    <p class="lead"><span id="leadN">206</span>種類のパーツから選んで作れるドット絵のPFPコレクション。<br>CAW NAME 1つにつき1体、無料でミントできます。<br>あとから特別アイテムを買って、帽子・メガネ・口元・首・背景・髪色を付け替えられます。</p>
+    <div class="mgrid">
+        <div class="screen" id="screen"><div id="stage"></div></div>
+        <div class="under">
+          <div class="mstat" id="mstat" role="status"></div>
+          <div class="row">
+            <button class="btn pink" id="rand">ランダム</button>
+            <button class="btn" id="randType">同じベースで</button>
+            <button class="btn" id="undo" aria-label="元に戻す">↶ 戻す</button>
+            <button class="btn" id="redo" aria-label="やり直す">↷</button>
+          </div>
+          <div class="row">
+            <button class="btn gold off" id="mint" aria-disabled="true">CAW NAMEで無料ミント（準備中）</button>
+            <a class="btn gram" data-gram>42GRAMで使う →</a>
+          </div>
+          <div class="card">
+            <h3>DNA（トークンに刻む値・特別アイテムは含まない）</h3>
+            <div class="dna" id="dna"></div>
+            <div class="row" style="margin-top:10px"><button class="btn" id="copyDna">コピー</button></div>
+            <div class="row" style="margin-top:10px">
+              <input class="dnaIn" id="dnaIn" placeholder="0x… を貼り付けて復元" aria-label="DNAを入力">
+              <button class="btn" id="loadDna">復元</button>
+            </div>
+          </div>
+          <div class="card"><h3>試着中の特別アイテム</h3><ul class="eqlist" id="eqlist"></ul></div>
+          <div class="card"><h3>Attributes</h3><dl class="attrs" id="attrs"></dl></div>
+        </div>
+      <div class="picker">
+        <div class="tabs" id="tabs" role="tablist"></div>
+        <div class="pane" id="pane"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="how">
+  <div class="wrap">
+    <h2 class="px">アバターは刻む。特別アイテムで飾る。</h2>
+    <p class="gift">ローンチ記念のお知らせ🎉<br>特別アイテム全11種を、アバター1体につき1つずつ無料プレゼント🎁</p>
+    <div class="steps" style="margin-top:30px">
+      <div class="step"><div class="ico" id="ico1"></div><h3 class="px">1. えらぶ</h3><p>ベース・髪型・メガネ・口元などを選択。組み合わせのルールは IID Punks と同じなので、ありえない絵にはなりません。</p></div>
+      <div class="step"><div class="ico"><span id="ico2"></span></div><h3 class="px">2. きざむ</h3><p>CAW NAME 1つにつきアバター1体を無料でミントできます。選んだパーツの組み合わせ（DNA）がトークンに書き込まれ、永久に固定されます。同じ見た目は1体だけです。</p></div>
+      <div class="step"><div class="ico" id="ico3"></div><h3 class="px">3. かざる</h3><p>特別アイテムを付けると、表示のときにコントラクトがアバターの上に重ねて描きます。外せば、ミントしたときの絵に戻ります。</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band gallery" id="gallery">
+  <div class="wrap">
+    <h2 class="px">ほかの組み合わせを見る</h2>
+    <p class="sub">まだミントされていない組み合わせから選んでいます。気になる子をクリックすると、メーカーに読み込まれます（特別アイテムを付けている子もいます）。</p>
+    <div class="gal" id="gal"></div>
+    <div class="row" style="margin-top:20px"><button class="btn pink" id="more">もっと見る</button></div>
+  </div>
+</section>
+
+<section class="band faq" id="faq">
+  <div class="wrap">
+    <h2 class="px">よくある質問</h2>
+    <details><summary>誰がミントできますか？</summary><p>CAW NAME を持っている人です。CAW NAME 1つにつきアバター1体を無料でミントでき（ガス代のみ）、そのCAW NAMEはミントに使われたことが記録されます。CAW NAME を複数持っていれば、その数だけミントできます。ミントに使ったCAW NAMEを手放しても、受け取った人がもう一度ミントすることはできません。</p></details>
+    <details><summary>作ったアバターはどこに保存されますか？</summary><p>このページでは、あなたのブラウザの中だけで組み立てています。ミント機能の公開後は、組み合わせ（DNA）がブロックチェーンに記録されます。DNAをコピーしておけば、あとで「復元」から同じアバターに戻せます。</p></details>
+    <details><summary>あとから見た目を変えられますか？</summary><p>ミントしたアバター本体（髪型やメガネなど、ミント時に選んだパーツすべて）は永久に固定です。変えられるのは、あとから買う「特別アイテム」の付け外しだけです。帽子・メガネ・口元・首・背景・髪色の6か所に1つずつ付けられ、付けた場所の元のパーツは表示上だけ隠れます（髪色は、髪型はそのままで色だけが変わります）。外せばミント時の絵に戻ります。</p></details>
+    <details><summary>特別アイテムは無料ですか？</summary><p>ローンチ記念として、期間中はアバター1体につき全11種を1つずつ無料で受け取れます（ガス代のみ）。受け取れるのはアバターの持ち主で、1体につき1回だけです。受け取り済みのアバターを譲り受けても、もう一度は受け取れません。期間の終了日時は公開時にお知らせします。</p></details>
+    <details><summary>特別アイテムは売り買いできますか？</summary><p>できます。特別アイテムはアバターとは別のNFTです。付けている間は預かりになって売れないので、売るときは外してからです。アバターを手放すと、付けていたアイテムもアバターと一緒に移ります。</p></details>
+    <details><summary>勝手に絵が変わることはありますか？</summary><p>ありません。変わるのは持ち主が特別アイテムを付け外ししたときだけです。パーツと特別アイテムの図案は、一度登録したら書き換えできない設計です。</p></details>
+    <details><summary>同じ見た目のアバターを2人が作ったら？</summary><p>先にミントした人だけが手に入れられます。見た目が同じかどうかは、コントラクトが全ピクセルの色から判定します。</p></details>
+    <details><summary>どんなパーツがありますか？</summary><p>人間（男女・肌の色5段階）、ゴールド・ゴースト・スケルトン・ロボット、猫5柄、犬8犬種。髪型と帽子、メガネ、口元、ヒゲ、ほくろや傷、ピアス、首まわり、髪飾り、ヘッドセットまで、IID Punks と同じパーツが使えます。42gAvaterMaker だけの追加パーツとして、体型の輪郭（ぽっちゃり・やせ・マッチョ）、七三分け（Side Part）、カーリーの前髪上げ（Curly Quiff）、ウエーブのショート（Wavy Short）、スーツ＆ネクタイ、Tシャツ、パーカー（フードを下ろした形）、ジョイント（口元）もあります。</p></details>
+    <details><summary>作ったアバターの画像はどこで手に入りますか？</summary><p>ミントしたアバターの画像は、マーケットや42GRAMでそのまま表示されます。ミント前のデザインは、DNAをコピーしておけば「復元」でいつでも戻せます。</p></details>
+  </div>
+</section>
+
+<section class="band cta">
+  <div class="wrap">
+    <h2 class="px">できたら、42GRAMのアイコンに。</h2>
+    <p style="margin:0">分散型SNS 42GRAM で、あなたのドットの顔を使おう。</p>
+    <div class="row"><a class="btn gram" data-gram>42GRAMへ行く →</a><a class="btn" href="#make">もう少しいじる</a></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span class="px">42gAvaterMaker — parts from IID Punks</span>
+    <span><a data-gram-text>42GRAM</a> ・ CAWDBP</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>/*PARTS*/</script>
+<script>/*ENGINE*/</script>
+<script>/*KECCAK*/</script>
+<script>/*ONCHAIN*/</script>
+<script>/*ITEMS*/</script>
+<script>
+{
+  // ===== 42GRAM link: set the URL here when it is decided =====
+  const GRAM_URL = "https://42g.pages.dev";
+  // ===== after deploying the contract: RPC URL of the chain + IIDPunksAvatars address =====
+  // (the page must be hosted where it may call the RPC; artifact previews block outside requests)
+  const CHAIN = { rpc: "", avatars: "" };
+
+  const E = PunkEngine, O = PunkOnchain;
+  E.init(PARTS);
+  const P = E.P;
+  const PT = O.buildParts(), STRS = O.buildStrings();
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const toast = m => { const t = $("toast"); t.textContent = m; t.style.display = "block"; clearTimeout(toast.h); toast.h = setTimeout(() => t.style.display = "none", 1600); };
+  const svgOf = s => E.toSVG(E.render(E.build(s).recipe));
+
+  // ---- minted designs: same lookHash as the contract, asked with lookTaken(bytes32) ----
+  const lookOf = s => O.lookHashOfGrid(E.render(E.build(s).recipe));   // items are not part of the design
+  const LOOK_TAKEN_SEL = keccak256("lookTaken(bytes32)").slice(0, 10);
+  const mintedCache = new Map();          // lookHash -> true / false
+  const chainReady = () => !!(CHAIN.rpc && CHAIN.avatars);
+  async function areMinted(hashes) {      // returns array of true / false / null (unknown)
+    const need = hashes.filter(h => !mintedCache.has(h));
+    if (need.length && chainReady()) {
+      try {
+        const body = need.map((h, i) => ({ jsonrpc: "2.0", id: i, method: "eth_call", params: [{ to: CHAIN.avatars, data: LOOK_TAKEN_SEL + h.slice(2) }, "latest"] }));
+        const res = await (await fetch(CHAIN.rpc, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) })).json();
+        for (const r of [].concat(res)) if (r && r.result) mintedCache.set(need[r.id], BigInt(r.result) !== 0n);
+      } catch { /* network error: stay unknown */ }
+    }
+    return hashes.map(h => (mintedCache.has(h) ? mintedCache.get(h) : null));
+  }
+  let checkSeq = 0;
+  async function checkCurrent() {
+    const my = ++checkSeq, h = lookOf(sel);
+    const [taken] = await areMinted([h]);
+    if (my !== checkSeq) return;           // a newer design was picked meanwhile
+    const st = $("mstat"), mint = $("mint");
+    st.className = "mstat" + (taken === true ? " taken" : taken === false ? " free" : "");
+    st.textContent = taken === true ? "このデザインはミント済みです。パーツを1つ変えるとミントできます。"
+      : taken === false ? "このデザインはまだミントされていません。"
+      : "ミント済みかどうかは、コントラクト公開後に確認できます。";
+    mint.textContent = taken === true ? "ミント済みのデザイン" : "CAW NAMEで無料ミント（準備中）";
+    mint.setAttribute("aria-disabled", "true");
+  }
+  // for checking the page before the contract exists: window.__g42.markMinted() marks the current design
+  window.__g42 = { lookOf, markMinted: () => { mintedCache.set(lookOf(sel), true); checkCurrent(); fillGallery(false); },
+    clear: () => { mintedCache.clear(); checkCurrent(); fillGallery(false); } };
+
+  // ---- 42GRAM links ----
+  for (const a of document.querySelectorAll("[data-gram],[data-gram-text]")) {
+    if (GRAM_URL) { a.href = GRAM_URL; a.target = "_blank"; a.rel = "noopener"; }
+    else {
+      a.removeAttribute("href"); a.classList.add("off"); a.setAttribute("aria-disabled", "true");
+      a.title = "42GRAMのURLは準備中です";
+      a.addEventListener("click", () => toast("42GRAMへのリンクは準備中です"));
+      if (a.hasAttribute("data-gram") && !a.closest("header")) a.textContent = a.textContent.replace("→", "（準備中）");
+    }
+  }
+
+  // ---- state: selection + undo history ----
+  let sel;
+  try { const saved = localStorage.getItem("42gam.dna"); if (saved) sel = E.normalize(E.decode(saved)); if (!sel || !sel.type) sel = null; } catch { sel = null; }
+  if (!sel) sel = E.randomize(Math.random, "Male");
+  let past = [], future = [];
+  let tab = "type";
+  const SI = SpecialItems;
+  let equipped = {};                         // slot -> item (try-on only; not part of the DNA)
+  try { const ids = JSON.parse(localStorage.getItem("42gam.items") || "[]"); for (const id of ids) { const it = SI.ITEMS.find(i => i.id === id); if (it) equipped[it.slot] = it; } } catch {}
+  const eqItems = () => Object.values(equipped);
+  const hatOk = s => E.options(s).head.length > 1;      // cats and pointy-eared dogs have no room for a hat
+
+  function commit(next) {
+    past.push(sel); if (past.length > 80) past.shift(); future = [];
+    sel = E.normalize(next); draw();
+  }
+  const set = (k, v) => commit({ ...sel, [k]: v });
+
+  const TABS = [["type", "ベース"], ["face", "フェイス"], ["head", "髪・帽子"], ["eyes", "目元"], ["mouth", "口"],
+    ["facial", "ヒゲ"], ["mark", "顔の特徴"], ["ear", "ピアス"], ["neck", "首"], ["acc", "髪飾り・ギア"], ["special", "特別アイテム"]];
+
+  const colorRow = (title, key, table) => ({ title, key, swatches: table.map((c, i) => ({ i, name: c[0], hex: Array.isArray(c[1]) ? c[1][0] : c[1] })) });
+  const itemGroup = (title, key, list, nameOf = x => x[1] || "なし") => ({ title, key, items: list.map(([x, i]) => ({ i, name: nameOf(x) })) });
+
+  function groupsFor(t) {
+    const o = E.options(sel), g = [];
+    const hl = ["Male", "Female", "Gold"].includes(sel.type);
+    const uses = (item, c) => item && item[4] === c;
+    if (t === "type") {
+      g.push({ title: "ベース", key: "type", items: E.TYPES.map(n => ({ i: n, name: n })) });
+      if (sel.type === "Male" || sel.type === "Female")
+        g.push({ title: "肌の色", key: "skin", swatches: P.SKIN_NAMES.map((n, i) => ({ i, name: n, hex: P.SKINS[n][0] })) });
+      if (sel.type === "Cat") {
+        g.push({ title: "柄", key: "catPattern", items: P.CAT_PATTERNS.map((c, i) => ({ i, name: c[1] })) });
+        if (P.CAT_PATTERNS[sel.catPattern || 0][2] === null)
+          g.push({ title: "毛色", key: "catFur", swatches: P.CAT_FUR_NAMES.map((n, i) => ({ i, name: n, hex: P.CAT_FUR[n][0] })) });
+        if (!P.CAT_PATTERNS[sel.catPattern || 0][4]) g.push(colorRow("目の色", "catEye", P.CAT_EYES));
+      }
+      if (sel.type === "Dog") {
+        g.push({ title: "犬種", key: "dogBreed", items: P.DOG_BREEDS.map((b, i) => ({ i, name: b[1] })) });
+        const b = P.DOG_BREEDS[sel.dogBreed || 0];
+        if (b[4].length > 1) g.push({ title: "毛色", key: "dogColor", swatches: b[4].map((c, i) => ({ i, name: c[0], hex: c[1][0] })) });
+      }
+    } else if (t === "face") {
+      if (!hl) return null;
+      g.push(itemGroup("輪郭", "shape", o.shape, x => x[1] || "標準"));
+      g.push(itemGroup("目つき", "expr", o.expr, x => x[1] || "標準"));
+      g.push(itemGroup("鼻", "nose", o.nose, x => x[1] || "標準"));
+      g.push(colorRow("瞳の色", "iris", P.IRIS_COLORS));
+    } else if (t === "head") {
+      if (o.head.length <= 1) return null;
+      g.push(itemGroup("髪型・帽子", "head", o.head));
+      const h = P.HEAD[sel.head || 0];
+      if (uses(h, "hair")) g.push(colorRow("髪の色", "hairColor", P.HAIR_COLORS));
+      if (uses(h, "hat")) g.push(colorRow("帽子の色", "hatColor", P.HAT_COLORS));
+    } else if (t === "eyes") {
+      if (o.eyes.length <= 1) return null;
+      g.push(itemGroup("メガネ・目元", "eyes", o.eyes));
+      const e = P.EYES[sel.eyes || 0];
+      if (uses(e, "lens")) g.push(colorRow("レンズの色", "lensColor", P.LENS_COLORS));
+      if (uses(e, "laser")) g.push(colorRow("レーザーの色", "laserColor", P.LASER_COLORS));
+      if (uses(e, "shadow")) g.push(colorRow("シャドウの色", "shadowColor", P.SHADOW_COLORS));
+    } else if (t === "mouth") {
+      if (!o.mouth.length) return null;
+      g.push(itemGroup("口元", "mouth", o.mouth));
+      if (hl && uses(P.MOUTH[sel.mouth || 0], "lips")) g.push(colorRow("口紅の色", "lipColor", P.LIP_COLORS));
+    } else if (t === "facial") {
+      if (!o.facial.length) return null;
+      g.push(itemGroup("ヒゲ", "facial", o.facial));
+      if (uses(P.FACIAL[sel.facial || 0], "beard")) g.push(colorRow("ヒゲの色", "beardColor", P.BEARD_OPTS));
+    } else if (t === "mark") {
+      if (!o.face.length) return null;
+      g.push(itemGroup("ほくろ・傷・メイクなど", "face", o.face));
+    } else if (t === "ear") {
+      if (!o.ear.length) return null;
+      g.push(itemGroup("ピアス", "ear", o.ear));
+      const e = P.EAR[sel.ear || 0];
+      if (uses(e, "metal")) g.push(colorRow("金属の色", "metal", P.METALS));
+      if (uses(e, "hat")) g.push(colorRow("羽根の色", "hatColor", P.HAT_COLORS));
+    } else if (t === "neck") {
+      if (!o.neck.length) return null;
+      g.push(itemGroup("首まわり", "neck", o.neck));
+      const n = P.NECK[sel.neck || 0];
+      if (uses(n, "metal")) g.push(colorRow("金属の色", "metal", P.METALS));
+      if (uses(n, "hat")) g.push(colorRow({ suit: "ネクタイの色", tshirt: "Tシャツの色", hooddown: "パーカーの色" }[n[0]] || "蝶ネクタイの色", "hatColor", P.HAT_COLORS));
+    } else if (t === "acc") {
+      if (!o.hacc.length && !o.gear.length) return null;
+      if (o.hacc.length) {
+        g.push(itemGroup("髪飾り", "hacc", o.hacc));
+        if (uses(P.HAIR_ACC[sel.hacc || 0], "hat")) g.push(colorRow("リボンの色", "hatColor", P.HAT_COLORS));
+      }
+      if (o.gear.length) g.push(itemGroup("ギア", "gear", o.gear));
+    }
+    return g;
+  }
+
+  function drawTabs() {
+    $("tabs").innerHTML = TABS.map(([k, l]) =>
+      `<button role="tab" data-tab="${k}" aria-selected="${k === tab}" class="${k === tab ? "on" : ""} ${k === "special" ? "sp" : groupsFor(k) ? "" : "na"}">${l}</button>`).join("");
+  }
+  const picOf = (s, items) => E.toSVG(E.render(E.build(s).recipe, items));
+  // a hair color item only shows when hair pixels are on the picture (not under a special hat, not on a bald head)
+  const hairShows = (s, items) => E.compose(E.build(s).recipe, items.filter(i => i.slot !== "hair")).flat().some(c => c === "H" || c === "i" || c === "j");
+  function drawSpecial() {
+    const rc = E.build(sel).recipe;
+    $("pane").innerHTML = `<div class="spnote">特別アイテムは、ミントしたアバターにあとから付け外しできる別のNFTです。${SI.LAUNCH_GIFT ? "<b>ローンチ記念：期間中は、アバター1体につき全11種を1つずつ無料でもらえます。</b>" : ""}ここでは試着できます（受け取りと装着はコントラクト公開後）。付けた場所の元のパーツは、表示上だけ隠れます。</div>` +
+      SI.SLOTS.map(slot => {
+        const list = SI.ITEMS.filter(i => i.slot === slot);
+        const cur = equipped[slot];
+        const noHat = slot === "hat" && !hatOk(sel);
+        const others = eqItems().filter(i => i.slot !== slot);
+        const noHair = slot === "hair" && !hairShows(sel, others);
+        const cell = (it) => {
+          const on = it ? cur && cur.id === it.id : !cur;
+          const dis = it && (noHat || noHair);
+          const items = it ? [...others, it] : others;
+          return `<button class="opt${on ? " on" : ""}" data-slot="${slot}" data-item="${it ? it.id : 0}" aria-pressed="${on}" ${dis ? "disabled" : ""}>
+            <div class="th">${E.toSVG(E.render(rc, items))}</div>
+            <div class="nm">${it ? esc(it.ja) : "なし"}</div>${it ? `<div class="pr">${SI.LAUNCH_GIFT ? "ローンチ記念 無料" : it.price === null ? "価格未定" : esc(it.price)}</div>` : ""}</button>`;
+        };
+        return `<div class="group"><h4>${SI.SLOT_JA[slot]}${noHat ? "（このベースは帽子を付けられません）" : ""}${noHair ? "（髪が見えていないので、髪色は変えられません）" : ""}</h4><div class="grid">${cell(null)}${list.map(cell).join("")}</div></div>`;
+      }).join("");
+  }
+  function drawPane() {
+    if (tab === "special") { drawSpecial(); return; }
+    let groups = groupsFor(tab);
+    if (!groups) { $("pane").innerHTML = `<div class="note">このベース（${esc(sel.type)}）では、このパーツは使えません。</div>`; return; }
+    $("pane").innerHTML = groups.map((g, gi) => {
+      if (g.items) return `<div class="group"><h4>${g.title}</h4><div class="grid">${g.items.map(it => {
+        const on = g.key === "type" ? sel.type === it.i : (sel[g.key] ?? 0) === it.i;
+        return `<button class="opt${on ? " on" : ""}" data-k="${g.key}" data-v="${esc(it.i)}" aria-pressed="${on}"><div class="th">${svgOf(E.normalize({ ...sel, [g.key]: it.i }))}</div><div class="nm">${esc(it.name)}</div></button>`;
+      }).join("")}</div></div>`;
+      return `<div class="group"><h4>${g.title}</h4><div class="sw">${g.swatches.map(s =>
+        `<button class="${(sel[g.key] || 0) === s.i ? "on" : ""}" data-k="${g.key}" data-v="${s.i}" aria-pressed="${(sel[g.key] || 0) === s.i}"><i style="background:${s.hex}"></i>${esc(s.name)}</button>`).join("")}</div></div>`;
+    }).join("");
+  }
+  function drawLeft() {
+    if (equipped.hat && !hatOk(sel)) delete equipped.hat;
+    const b = E.build(sel), grid = E.render(b.recipe, eqItems());
+    $("stage").innerHTML = E.toSVG(grid);
+    $("eqlist").innerHTML = eqItems().length ? SI.SLOTS.filter(sl => equipped[sl]).map(sl => `<li>${SI.SLOT_JA[sl]}：${esc(equipped[sl].ja)}</li>`).join("") : "<li style='background:transparent'>なし</li>";
+    const dna = E.encode(sel);
+    $("dna").textContent = dna;
+    const SLOT_TRAIT = { hat: "Special Hat", eyes: "Special Eyes", mouth: "Special Mouth", neck: "Special Neck", bg: "Background", hair: "Hair Color" };
+    $("attrs").innerHTML = [...b.attrs, ...SI.SLOTS.filter(sl => equipped[sl]).map(sl => [SLOT_TRAIT[sl], equipped[sl].name])]
+      .map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
+    $("logoPunk").innerHTML = E.toSVG(E.render(b.recipe));
+    $("undo").disabled = !past.length; $("redo").disabled = !future.length;
+    checkCurrent();
+    try { localStorage.setItem("42gam.dna", dna); localStorage.setItem("42gam.items", JSON.stringify(eqItems().map(i => i.id))); } catch {}
+  }
+  function draw() { drawTabs(); drawPane(); drawLeft(); }
+
+  // ---- events ----
+  $("tabs").addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (b) { tab = b.dataset.tab; drawTabs(); drawPane(); } });
+  $("pane").addEventListener("click", e => {
+    const t = e.target.closest("[data-slot]");
+    if (t && !t.disabled) {
+      const id = Number(t.dataset.item);
+      if (id) equipped[t.dataset.slot] = SI.ITEMS.find(i => i.id === id); else delete equipped[t.dataset.slot];
+      drawPane(); drawLeft(); return;
+    }
+    const b = e.target.closest("[data-k]"); if (!b) return;
+    const k = b.dataset.k; set(k, k === "type" ? b.dataset.v : Number(b.dataset.v));
+  });
+  $("rand").onclick = () => commit(E.randomize(Math.random));
+  $("randType").onclick = () => commit(E.randomize(Math.random, sel.type));
+  $("undo").onclick = () => { if (!past.length) return; future.push(sel); sel = past.pop(); draw(); };
+  $("redo").onclick = () => { if (!future.length) return; past.push(sel); sel = future.pop(); draw(); };
+  document.addEventListener("keydown", e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && e.target.tagName !== "INPUT") { e.preventDefault(); (e.shiftKey ? $("redo") : $("undo")).click(); }
+  });
+  const copy = async (text, ok) => { try { await navigator.clipboard.writeText(text); toast(ok); } catch { toast("コピーできませんでした"); } };
+  $("copyDna").onclick = () => copy(E.encode(sel), "DNAをコピーしました");
+  $("loadDna").onclick = () => {
+    const v = $("dnaIn").value.trim(); if (!v) return;
+    try { if (!/^0x[0-9a-fA-F]{64}$/.test(v)) throw 0; const s = E.decode(v); if (!s.type) throw 0; commit(s); $("dnaIn").value = ""; toast("復元しました"); }
+    catch { toast("DNAが正しくありません"); }
+  };
+  $("mint").onclick = () => toast(mintedCache.get(lookOf(sel)) ? "このデザインはミント済みです" : "CAW NAMEでのミントはコントラクト公開後に使えます");
+
+  $("leadN").textContent = PT.names.length;
+  // ---- pictures for the three steps ----
+  {
+    const demo = E.randomize(Math.random, "Female");
+    const bare = E.normalize({ ...demo, head: 0, eyes: 0 });
+    $("ico1").innerHTML = [bare, { ...bare, head: demo.head }, demo].map(x => E.toSVG(E.render(E.build(x).recipe))).join("");
+    $("ico2").textContent = E.encode(demo).slice(0, 26) + "…";
+    const gift = ["hat", "bg"].map(sl => SI.ITEMS.find(i => i.slot === sl));
+    $("ico3").innerHTML = E.toSVG(E.render(E.build(demo).recipe)) + "<span>→</span>" + E.toSVG(E.render(E.build(demo).recipe, gift));
+  }
+
+  // ---- gallery ----
+  let galSeq = 0;
+  async function fillGallery(add) {
+    const my = ++galSeq;
+    // draw extra candidates, drop the ones already minted, keep 24
+    const cands = Array.from({ length: 40 }, () => E.randomize(Math.random));
+    const flags = await areMinted(cands.map(lookOf));
+    if (my !== galSeq) return;
+    const picks = cands.filter((_, i) => flags[i] !== true).slice(0, 24);
+    const html = picks.map(s => {
+      let its = Math.random() < 0.35 ? SI.SLOTS.filter(sl => Math.random() < 0.4 && (sl !== "hat" || hatOk(s)))
+        .map(sl => { const l = SI.ITEMS.filter(i => i.slot === sl); return l[Math.floor(Math.random() * l.length)]; }) : [];
+      if (!hairShows(s, its)) its = its.filter(i => i.slot !== "hair");
+      return `<button data-dna="${E.encode(s)}" data-items="${its.map(i => i.id).join(",")}" aria-label="この組み合わせを読み込む">${picOf(s, its)}</button>`;
+    }).join("");
+    $("gal").innerHTML = add ? $("gal").innerHTML + html : html;
+  }
+  $("gal").addEventListener("click", e => {
+    const b = e.target.closest("[data-dna]"); if (!b) return;
+    equipped = {};
+    for (const id of (b.dataset.items || "").split(",").filter(Boolean)) { const it = SI.ITEMS.find(i => i.id === Number(id)); equipped[it.slot] = it; }
+    commit(E.decode(b.dataset.dna)); location.hash = "#make"; toast("メーカーに読み込みました");
+  });
+  $("more").onclick = () => fillGallery(true);
+  fillGallery(false);
+  draw();
+}
+</script>
+</body>
+</html>

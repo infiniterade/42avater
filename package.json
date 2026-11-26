@@ -1,0 +1,10 @@
+{
+  "name": "42gram-avatars-tools",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "data": "node tools/make_data.js",
+    "check": "node tools/make_data.js --check && node tools/test_keccak.js && node tools/test_onchain.js && node tools/test_items.js",
+    "maker": "node maker/build.js"
+  }
+}
