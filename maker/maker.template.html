@@ -60,10 +60,18 @@ dl.attrs{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 14px;marg
 dl.attrs dt{color:var(--dim)}dl.attrs dd{margin:0;font-weight:700}
 .picker{background:var(--paper);border:4px solid var(--line);box-shadow:10px 10px 0 var(--line);display:flex;flex-direction:column;max-height:calc(100vh - 110px);min-height:520px}
 @media (max-width:900px){.picker{min-height:0}}
-@media (max-width:600px){header{position:static}header nav a:not(.btn){display:none}header .wrap{flex-wrap:nowrap}}
+@media (max-width:600px){header{position:static}header nav a:not(.btn){display:none}header .wrap{flex-wrap:nowrap;gap:8px;min-height:54px}
+  header nav{flex-wrap:nowrap;gap:6px}.logo{font-size:17px;gap:6px}.logo svg{width:26px;height:26px}
+  .langsw{margin-left:0}.langsw button{padding:5px 7px;font-size:12px;min-height:32px}header .btn{padding:4px 8px;min-height:34px;font-size:14px}}
+@media (max-width:380px){.logo{font-size:14px}.logo svg{display:none}header .wrap{gap:6px}.langsw button{padding:5px 6px}header .btn{padding:4px 6px;font-size:13px}}
 .mstat{border:3px solid var(--line);padding:8px 12px;font-size:14px;background:var(--paper);color:var(--dim)}
 .mstat.taken{background:#FFE1E1;color:#8A1020;font-weight:700}
 .mstat.free{background:#E3F7E5;color:#14612A;font-weight:700}
+.langsw{display:inline-flex;border:2px solid #fff;margin-left:6px}
+.langsw button{font:inherit;font-size:13px;white-space:nowrap;background:transparent;color:#fff;border:0;padding:6px 9px;min-height:36px;cursor:pointer}
+.langsw button[aria-pressed=true]{background:#fff;color:var(--ink)}
+.btn.icon{padding:6px 12px;min-width:48px;justify-content:center;font-size:22px;line-height:1}
+.btn.gold,.btn.gram{white-space:normal;text-align:center;line-height:1.3}
 .tabs button.sp{color:var(--gold)}
 .tabs button.sp.on{color:#111;background:var(--gold)}
 .opt .pr{font-size:12px;color:var(--dim)}
@@ -133,7 +141,8 @@ footer a{color:#fff}
   <div class="wrap">
     <a class="logo px" href="#make"><span id="logoPunk"></span><span>42g<b>Avater</b>Maker</span></a>
     <nav class="px">
-      <a href="#make">つくる</a><a href="#gallery">ギャラリー</a><a href="#faq">FAQ</a>
+      <a href="#make" data-i18n="nav_make">つくる</a><a href="#gallery" data-i18n="nav_gallery">ギャラリー</a><a href="#faq" data-i18n="nav_faq">FAQ</a>
+      <span class="langsw" role="group" aria-label="Language"><button type="button" data-lang="ja">日本語</button><button type="button" data-lang="en">EN</button></span>
       <a class="btn gram" data-gram>42GRAM</a>
     </nav>
   </div>
@@ -141,32 +150,32 @@ footer a{color:#fff}
 
 <section class="maker" id="make">
   <div class="wrap">
-    <h1 class="px">42GRAMのアバターをつくろう。</h1>
-    <p class="lead"><span id="leadN">206</span>種類のパーツから選んで作れるドット絵のPFPコレクション。<br>CAW NAME 1つにつき1体、無料でミントできます。<br>あとから特別アイテムを買って、帽子・メガネ・口元・首・背景・髪色を付け替えられます。</p>
+    <h1 class="px" data-i18n="h1">42GRAMのアバターをつくろう。</h1>
+    <p class="lead" data-i18n-html="lead"></p>
     <div class="mgrid">
         <div class="screen" id="screen"><div id="stage"></div></div>
         <div class="under">
           <div class="mstat" id="mstat" role="status"></div>
           <div class="row">
-            <button class="btn pink" id="rand">ランダム</button>
-            <button class="btn" id="randType">同じベースで</button>
-            <button class="btn" id="undo" aria-label="元に戻す">↶ 戻す</button>
-            <button class="btn" id="redo" aria-label="やり直す">↷</button>
+            <button class="btn pink" id="rand" data-i18n="rand">ランダム</button>
+            <button class="btn" id="randType" data-i18n="randType">同じベースで</button>
+            <button class="btn icon" id="undo" data-i18n-aria="undo_aria" aria-label="元に戻す" title="元に戻す">↶</button>
+            <button class="btn icon" id="redo" data-i18n-aria="redo_aria" aria-label="やり直す" title="やり直す">↷</button>
           </div>
           <div class="row">
             <button class="btn gold off" id="mint" aria-disabled="true">CAW NAMEで無料ミント（準備中）</button>
-            <a class="btn gram" data-gram>42GRAMで使う →</a>
+            <a class="btn gram" data-gram data-i18n="use42">42GRAMで使う →</a>
           </div>
           <div class="card">
-            <h3>DNA（トークンに刻む値・特別アイテムは含まない）</h3>
+            <h3 data-i18n="dna_h">DNA（トークンに刻む値・特別アイテムは含まない）</h3>
             <div class="dna" id="dna"></div>
-            <div class="row" style="margin-top:10px"><button class="btn" id="copyDna">コピー</button></div>
+            <div class="row" style="margin-top:10px"><button class="btn" id="copyDna" data-i18n="copy">コピー</button></div>
             <div class="row" style="margin-top:10px">
-              <input class="dnaIn" id="dnaIn" placeholder="0x… を貼り付けて復元" aria-label="DNAを入力">
-              <button class="btn" id="loadDna">復元</button>
+              <input class="dnaIn" id="dnaIn" placeholder="0x… を貼り付けて復元" aria-label="DNAを入力" data-i18n-ph="dna_ph" data-i18n-aria="dna_aria">
+              <button class="btn" id="loadDna" data-i18n="restore">復元</button>
             </div>
           </div>
-          <div class="card"><h3>試着中の特別アイテム</h3><ul class="eqlist" id="eqlist"></ul></div>
+          <div class="card"><h3 data-i18n="trying_h">試着中の特別アイテム</h3><ul class="eqlist" id="eqlist"></ul></div>
           <div class="card"><h3>Attributes</h3><dl class="attrs" id="attrs"></dl></div>
         </div>
       <div class="picker">
@@ -179,45 +188,37 @@ footer a{color:#fff}
 
 <section class="band" id="how">
   <div class="wrap">
-    <h2 class="px">アバターは刻む。特別アイテムで飾る。</h2>
-    <p class="gift">ローンチ記念のお知らせ🎉<br>特別アイテム全11種を、アバター1体につき1つずつ無料プレゼント🎁</p>
+    <h2 class="px" data-i18n="how_h2">アバターは刻む。特別アイテムで飾る。</h2>
+    <p class="gift" data-i18n-html="gift"></p>
     <div class="steps" style="margin-top:30px">
-      <div class="step"><div class="ico" id="ico1"></div><h3 class="px">1. えらぶ</h3><p>ベース・髪型・メガネ・口元などを選択。組み合わせのルールは IID Punks と同じなので、ありえない絵にはなりません。</p></div>
-      <div class="step"><div class="ico"><span id="ico2"></span></div><h3 class="px">2. きざむ</h3><p>CAW NAME 1つにつきアバター1体を無料でミントできます。選んだパーツの組み合わせ（DNA）がトークンに書き込まれ、永久に固定されます。同じ見た目は1体だけです。</p></div>
-      <div class="step"><div class="ico" id="ico3"></div><h3 class="px">3. かざる</h3><p>特別アイテムを付けると、表示のときにコントラクトがアバターの上に重ねて描きます。外せば、ミントしたときの絵に戻ります。</p></div>
+      <div class="step"><div class="ico" id="ico1"></div><h3 class="px" data-i18n="s1h"></h3><p data-i18n="s1p"></p></div>
+      <div class="step"><div class="ico"><span id="ico2"></span></div><h3 class="px" data-i18n="s2h"></h3><p data-i18n="s2p"></p></div>
+      <div class="step"><div class="ico" id="ico3"></div><h3 class="px" data-i18n="s3h"></h3><p data-i18n="s3p"></p></div>
     </div>
   </div>
 </section>
 
 <section class="band gallery" id="gallery">
   <div class="wrap">
-    <h2 class="px">ほかの組み合わせを見る</h2>
-    <p class="sub">まだミントされていない組み合わせから選んでいます。気になる子をクリックすると、メーカーに読み込まれます（特別アイテムを付けている子もいます）。</p>
+    <h2 class="px" data-i18n="gal_h">ほかの組み合わせを見る</h2>
+    <p class="sub" data-i18n="gal_sub"></p>
     <div class="gal" id="gal"></div>
-    <div class="row" style="margin-top:20px"><button class="btn pink" id="more">もっと見る</button></div>
+    <div class="row" style="margin-top:20px"><button class="btn pink" id="more" data-i18n="more">もっと見る</button></div>
   </div>
 </section>
 
 <section class="band faq" id="faq">
   <div class="wrap">
-    <h2 class="px">よくある質問</h2>
-    <details><summary>誰がミントできますか？</summary><p>CAW NAME を持っている人です。CAW NAME 1つにつきアバター1体を無料でミントでき（ガス代のみ）、そのCAW NAMEはミントに使われたことが記録されます。CAW NAME を複数持っていれば、その数だけミントできます。ミントに使ったCAW NAMEを手放しても、受け取った人がもう一度ミントすることはできません。</p></details>
-    <details><summary>作ったアバターはどこに保存されますか？</summary><p>このページでは、あなたのブラウザの中だけで組み立てています。ミント機能の公開後は、組み合わせ（DNA）がブロックチェーンに記録されます。DNAをコピーしておけば、あとで「復元」から同じアバターに戻せます。</p></details>
-    <details><summary>あとから見た目を変えられますか？</summary><p>ミントしたアバター本体（髪型やメガネなど、ミント時に選んだパーツすべて）は永久に固定です。変えられるのは、あとから買う「特別アイテム」の付け外しだけです。帽子・メガネ・口元・首・背景・髪色の6か所に1つずつ付けられ、付けた場所の元のパーツは表示上だけ隠れます（髪色は、髪型はそのままで色だけが変わります）。外せばミント時の絵に戻ります。</p></details>
-    <details><summary>特別アイテムは無料ですか？</summary><p>ローンチ記念として、期間中はアバター1体につき全11種を1つずつ無料で受け取れます（ガス代のみ）。受け取れるのはアバターの持ち主で、1体につき1回だけです。受け取り済みのアバターを譲り受けても、もう一度は受け取れません。期間の終了日時は公開時にお知らせします。</p></details>
-    <details><summary>特別アイテムは売り買いできますか？</summary><p>できます。特別アイテムはアバターとは別のNFTです。付けている間は預かりになって売れないので、売るときは外してからです。アバターを手放すと、付けていたアイテムもアバターと一緒に移ります。</p></details>
-    <details><summary>勝手に絵が変わることはありますか？</summary><p>ありません。変わるのは持ち主が特別アイテムを付け外ししたときだけです。パーツと特別アイテムの図案は、一度登録したら書き換えできない設計です。</p></details>
-    <details><summary>同じ見た目のアバターを2人が作ったら？</summary><p>先にミントした人だけが手に入れられます。見た目が同じかどうかは、コントラクトが全ピクセルの色から判定します。</p></details>
-    <details><summary>どんなパーツがありますか？</summary><p>人間（男女・肌の色5段階）、ゴールド・ゴースト・スケルトン・ロボット、猫5柄、犬8犬種。髪型と帽子、メガネ、口元、ヒゲ、ほくろや傷、ピアス、首まわり、髪飾り、ヘッドセットまで、IID Punks と同じパーツが使えます。42gAvaterMaker だけの追加パーツとして、体型の輪郭（ぽっちゃり・やせ・マッチョ）、七三分け（Side Part）、カーリーの前髪上げ（Curly Quiff）、ウエーブのショート（Wavy Short）、スーツ＆ネクタイ、Tシャツ、パーカー（フードを下ろした形）、ジョイント（口元）もあります。</p></details>
-    <details><summary>作ったアバターの画像はどこで手に入りますか？</summary><p>ミントしたアバターの画像は、マーケットや42GRAMでそのまま表示されます。ミント前のデザインは、DNAをコピーしておけば「復元」でいつでも戻せます。</p></details>
+    <h2 class="px" data-i18n="faq_h">よくある質問</h2>
+    <div data-i18n-html="faq"></div>
   </div>
 </section>
 
 <section class="band cta">
   <div class="wrap">
-    <h2 class="px">できたら、42GRAMのアイコンに。</h2>
-    <p style="margin:0">分散型SNS 42GRAM で、あなたのドットの顔を使おう。</p>
-    <div class="row"><a class="btn gram" data-gram>42GRAMへ行く →</a><a class="btn" href="#make">もう少しいじる</a></div>
+    <h2 class="px" data-i18n="cta_h">できたら、42GRAMのアイコンに。</h2>
+    <p style="margin:0" data-i18n="cta_p">分散型SNS 42GRAM で、あなたのドットの顔を使おう。</p>
+    <div class="row"><a class="btn gram" data-gram data-i18n="go42">42GRAMへ行く →</a><a class="btn" href="#make" data-i18n="tweak">もう少しいじる</a></div>
   </div>
 </section>
 
@@ -243,13 +244,27 @@ footer a{color:#fff}
   // (the page must be hosted where it may call the RPC; artifact previews block outside requests)
   const CHAIN = { rpc: "", avatars: "" };
 
+  const STRINGS = {"ja": {"nav_make": "つくる", "nav_gallery": "ギャラリー", "nav_faq": "FAQ", "h1": "42GRAMのアバターをつくろう。", "lead": "<span id=\"leadN\"></span>種類のパーツから選んで作れるドット絵のPFPコレクション。<br>CAW NAME 1つにつき1体、無料でミントできます。<br>あとから特別アイテムを買って、帽子・メガネ・口元・首・背景・髪色を付け替えられます。", "rand": "ランダム", "randType": "同じベースで", "undo_aria": "元に戻す", "redo_aria": "やり直す", "mint_btn": "CAW NAMEで無料ミント（準備中）", "mint_taken": "ミント済みのデザイン", "use42": "42GRAMで使う →", "dna_h": "DNA（トークンに刻む値・特別アイテムは含まない）", "copy": "コピー", "dna_ph": "0x… を貼り付けて復元", "dna_aria": "DNAを入力", "restore": "復元", "trying_h": "試着中の特別アイテム", "none": "なし", "std": "標準", "how_h2": "アバターは刻む。特別アイテムで飾る。", "gift": "ローンチ記念のお知らせ🎉<br>特別アイテム全11種を、アバター1体につき1つずつ無料プレゼント🎁", "s1h": "1. えらぶ", "s1p": "ベース・髪型・メガネ・口元などを選択。組み合わせのルールは IID Punks と同じなので、ありえない絵にはなりません。", "s2h": "2. きざむ", "s2p": "CAW NAME 1つにつきアバター1体を無料でミントできます。選んだパーツの組み合わせ（DNA）がトークンに書き込まれ、永久に固定されます。同じ見た目は1体だけです。", "s3h": "3. かざる", "s3p": "特別アイテムを付けると、表示のときにコントラクトがアバターの上に重ねて描きます。外せば、ミントしたときの絵に戻ります。", "gal_h": "ほかの組み合わせを見る", "gal_sub": "まだミントされていない組み合わせから選んでいます。気になる子をクリックすると、メーカーに読み込まれます（特別アイテムを付けている子もいます）。", "more": "もっと見る", "gal_aria": "この組み合わせを読み込む", "faq_h": "よくある質問", "cta_h": "できたら、42GRAMのアイコンに。", "cta_p": "分散型SNS 42GRAM で、あなたのドットの顔を使おう。", "go42": "42GRAMへ行く →", "tweak": "もう少しいじる", "mstat_taken": "このデザインはミント済みです。パーツを1つ変えるとミントできます。", "mstat_free": "このデザインはまだミントされていません。", "mstat_unknown": "ミント済みかどうかは、コントラクト公開後に確認できます。", "tab_type": "ベース", "tab_face": "フェイス", "tab_head": "髪・帽子", "tab_eyes": "目元", "tab_mouth": "口", "tab_facial": "ヒゲ", "tab_mark": "顔の特徴", "tab_ear": "ピアス", "tab_neck": "首", "tab_acc": "髪飾り・ギア", "tab_special": "特別アイテム", "g_base": "ベース", "g_skin": "肌の色", "g_pattern": "柄", "g_fur": "毛色", "g_catEye": "目の色", "g_breed": "犬種", "g_shape": "輪郭", "g_expr": "目つき", "g_nose": "鼻", "g_iris": "瞳の色", "g_head": "髪型・帽子", "g_hairColor": "髪の色", "g_hatColor": "帽子の色", "g_eyes": "メガネ・目元", "g_lens": "レンズの色", "g_laser": "レーザーの色", "g_shadow": "シャドウの色", "g_mouth": "口元", "g_lips": "口紅の色", "g_facial": "ヒゲ", "g_beard": "ヒゲの色", "g_face": "ほくろ・傷・メイクなど", "g_ear": "ピアス", "g_metal": "金属の色", "g_feather": "羽根の色", "g_neck": "首まわり", "g_tie": "ネクタイの色", "g_tshirt": "Tシャツの色", "g_hoodie": "パーカーの色", "g_bowtie": "蝶ネクタイの色", "g_hacc": "髪飾り", "g_ribbon": "リボンの色", "g_gear": "ギア", "sp_note": "特別アイテムは、ミントしたアバターにあとから付け外しできる別のNFTです。<b>ローンチ記念：期間中は、アバター1体につき全11種を1つずつ無料でもらえます。</b>ここでは試着できます（受け取りと装着はコントラクト公開後）。付けた場所の元のパーツは、表示上だけ隠れます。", "price_free": "ローンチ記念 無料", "price_tbd": "価格未定", "no_hat": "（このベースは帽子を付けられません）", "no_hair": "（髪が見えていないので、髪色は変えられません）", "not_for_base": "このベース（{b}）では、このパーツは使えません。", "slot_hat": "帽子", "slot_eyes": "メガネ", "slot_mouth": "口元", "slot_neck": "首", "slot_bg": "背景", "slot_hair": "髪色", "copy_fail": "コピーできませんでした", "dna_copied": "DNAをコピーしました", "restored": "復元しました", "dna_bad": "DNAが正しくありません", "minted_toast": "このデザインはミント済みです", "mint_soon": "CAW NAMEでのミントはコントラクト公開後に使えます", "loaded": "メーカーに読み込みました", "gram_soon": "42GRAMへのリンクは準備中です", "faq": "<details><summary>誰がミントできますか？</summary><p>CAW NAME を持っている人です。CAW NAME 1つにつきアバター1体を無料でミントでき（ガス代のみ）、そのCAW NAMEはミントに使われたことが記録されます。CAW NAME を複数持っていれば、その数だけミントできます。ミントに使ったCAW NAMEを手放しても、受け取った人がもう一度ミントすることはできません。</p></details>\n    <details><summary>作ったアバターはどこに保存されますか？</summary><p>このページでは、あなたのブラウザの中だけで組み立てています。ミント機能の公開後は、組み合わせ（DNA）がブロックチェーンに記録されます。DNAをコピーしておけば、あとで「復元」から同じアバターに戻せます。</p></details>\n    <details><summary>あとから見た目を変えられますか？</summary><p>ミントしたアバター本体（髪型やメガネなど、ミント時に選んだパーツすべて）は永久に固定です。変えられるのは、あとから買う「特別アイテム」の付け外しだけです。帽子・メガネ・口元・首・背景・髪色の6か所に1つずつ付けられ、付けた場所の元のパーツは表示上だけ隠れます（髪色は、髪型はそのままで色だけが変わります）。外せばミント時の絵に戻ります。</p></details>\n    <details><summary>特別アイテムは無料ですか？</summary><p>ローンチ記念として、期間中はアバター1体につき全11種を1つずつ無料で受け取れます（ガス代のみ）。受け取れるのはアバターの持ち主で、1体につき1回だけです。受け取り済みのアバターを譲り受けても、もう一度は受け取れません。期間の終了日時は公開時にお知らせします。</p></details>\n    <details><summary>特別アイテムは売り買いできますか？</summary><p>できます。特別アイテムはアバターとは別のNFTです。付けている間は預かりになって売れないので、売るときは外してからです。アバターを手放すと、付けていたアイテムもアバターと一緒に移ります。</p></details>\n    <details><summary>勝手に絵が変わることはありますか？</summary><p>ありません。変わるのは持ち主が特別アイテムを付け外ししたときだけです。パーツと特別アイテムの図案は、一度登録したら書き換えできない設計です。</p></details>\n    <details><summary>同じ見た目のアバターを2人が作ったら？</summary><p>先にミントした人だけが手に入れられます。見た目が同じかどうかは、コントラクトが全ピクセルの色から判定します。</p></details>\n    <details><summary>どんなパーツがありますか？</summary><p>人間（男女・肌の色5段階）、ゴールド・ゴースト・スケルトン・ロボット、猫5柄、犬8犬種。髪型と帽子、メガネ、口元、ヒゲ、ほくろや傷、ピアス、首まわり、髪飾り、ヘッドセットまで、IID Punks と同じパーツが使えます。42gAvaterMaker だけの追加パーツとして、体型の輪郭（ぽっちゃり・やせ・マッチョ）、七三分け（Side Part）、カーリーの前髪上げ（Curly Quiff）、ウエーブのショート（Wavy Short）、スーツ＆ネクタイ、Tシャツ、パーカー（フードを下ろした形）、ジョイント（口元）もあります。</p></details>\n    <details><summary>作ったアバターの画像はどこで手に入りますか？</summary><p>ミントしたアバターの画像は、マーケットや42GRAMでそのまま表示されます。ミント前のデザインは、DNAをコピーしておけば「復元」でいつでも戻せます。</p></details>"}, "en": {"nav_make": "Make", "nav_gallery": "Gallery", "nav_faq": "FAQ", "h1": "Make your 42GRAM avatar.", "lead": "A pixel-art PFP collection you build from <span id=\"leadN\"></span> parts.<br>One per CAW NAME, free to mint.<br>Later, get special items and swap the hat, glasses, mouth, neck, background or hair color.", "rand": "Random", "randType": "Same base", "undo_aria": "Undo", "redo_aria": "Redo", "mint_btn": "Mint free with a CAW NAME (coming soon)", "mint_taken": "Already minted", "use42": "Use it on 42GRAM →", "dna_h": "DNA (the value stored in the token; special items not included)", "copy": "Copy", "dna_ph": "Paste 0x… to restore", "dna_aria": "Enter a DNA", "restore": "Restore", "trying_h": "Special items you are trying on", "none": "None", "std": "Default", "how_h2": "Your avatar is set for good. Special items dress it up.", "gift": "Launch celebration 🎉<br>All 11 special items free: one of each for every avatar 🎁", "s1h": "1. Pick", "s1p": "Choose a base, hair, glasses, mouth and more. The combination rules are the same as IID Punks, so you never get a broken picture.", "s2h": "2. Mint", "s2p": "Each CAW NAME mints one avatar for free. Your combination (DNA) is written into the token and fixed forever. Each look exists only once.", "s3h": "3. Dress up", "s3p": "Equip a special item and the contract draws it over your avatar whenever it is shown. Take it off and the minted picture is back.", "gal_h": "See other combinations", "gal_sub": "Picked from combinations nobody has minted yet. Click one to load it into the maker (some wear special items).", "more": "Show more", "gal_aria": "Load this combination", "faq_h": "FAQ", "cta_h": "Done? Make it your 42GRAM icon.", "cta_p": "Use your pixel face on 42GRAM, the decentralized social network.", "go42": "Go to 42GRAM →", "tweak": "Keep tweaking", "mstat_taken": "This design is already minted. Change any one part to mint.", "mstat_free": "This design has not been minted yet.", "mstat_unknown": "Whether a design is minted can be checked once the contract is live.", "tab_type": "Base", "tab_face": "Face", "tab_head": "Hair & Hats", "tab_eyes": "Eyes", "tab_mouth": "Mouth", "tab_facial": "Facial hair", "tab_mark": "Face marks", "tab_ear": "Earrings", "tab_neck": "Neck", "tab_acc": "Hair acc. & Gear", "tab_special": "Special items", "g_base": "Base", "g_skin": "Skin", "g_pattern": "Pattern", "g_fur": "Fur", "g_catEye": "Eye color", "g_breed": "Breed", "g_shape": "Face shape", "g_expr": "Expression", "g_nose": "Nose", "g_iris": "Eye color", "g_head": "Hair & hats", "g_hairColor": "Hair color", "g_hatColor": "Hat color", "g_eyes": "Glasses & eyes", "g_lens": "Lens color", "g_laser": "Laser color", "g_shadow": "Shadow color", "g_mouth": "Mouth", "g_lips": "Lipstick color", "g_facial": "Facial hair", "g_beard": "Beard color", "g_face": "Moles, scars, makeup…", "g_ear": "Earrings", "g_metal": "Metal", "g_feather": "Feather color", "g_neck": "Neck", "g_tie": "Tie color", "g_tshirt": "T-shirt color", "g_hoodie": "Hoodie color", "g_bowtie": "Bow tie color", "g_hacc": "Hair accessory", "g_ribbon": "Ribbon color", "g_gear": "Gear", "sp_note": "Special items are separate NFTs you can put on and take off a minted avatar. <b>Launch celebration: while it lasts, every avatar gets one of each of the 11 items for free.</b> Try them on here (claiming and equipping open when the contract is live). The part an item covers is only hidden on the picture.", "price_free": "Free (launch)", "price_tbd": "Price TBD", "no_hat": " (this base can't wear a hat)", "no_hair": " (no visible hair to recolor)", "not_for_base": "This part isn't available for {b}.", "slot_hat": "Hat", "slot_eyes": "Glasses", "slot_mouth": "Mouth", "slot_neck": "Neck", "slot_bg": "Background", "slot_hair": "Hair color", "copy_fail": "Couldn't copy", "dna_copied": "DNA copied", "restored": "Restored", "dna_bad": "That DNA isn't valid", "minted_toast": "This design is already minted", "mint_soon": "Minting with a CAW NAME opens when the contract is live", "loaded": "Loaded into the maker", "gram_soon": "The 42GRAM link is coming soon", "faq": "<details><summary>Who can mint?</summary><p>Anyone with a CAW NAME. Each CAW NAME mints one avatar for free (you only pay gas), and the CAW NAME is recorded as used. If you have several CAW NAMEs, you can mint that many. If you sell a CAW NAME you minted with, the new owner can't mint with it again.</p></details>\n    <details><summary>Where is my avatar saved?</summary><p>On this page it is put together only inside your browser. Once minting is live, the combination (DNA) is recorded on the blockchain. Copy the DNA and you can bring the same avatar back later with Restore.</p></details>\n    <details><summary>Can I change the look later?</summary><p>The minted avatar itself (every part you chose, including hair and glasses) is fixed forever. What you can change is special items you get later: one each for hat, glasses, mouth, neck, background and hair color. The part an item covers is only hidden on the picture (hair color keeps your hairstyle and changes only the color). Take it off and the minted picture is back.</p></details>\n    <details><summary>Are special items free?</summary><p>As a launch celebration, while it lasts every avatar can claim one of each of the 11 items for free (gas only). Only the avatar's owner can claim, once per avatar. If you get an avatar that already claimed, you can't claim again. The end date will be announced at launch.</p></details>\n    <details><summary>Can I buy and sell special items?</summary><p>Yes. Special items are NFTs separate from avatars. While an item is equipped it is held by the avatar contract and can't be sold, so take it off first. If you transfer an avatar, the items it wears go with it.</p></details>\n    <details><summary>Can the picture change on its own?</summary><p>No. It changes only when the owner puts special items on or takes them off. Parts and special item designs can never be rewritten once added.</p></details>\n    <details><summary>What if two people make the same look?</summary><p>Only the first to mint gets it. The contract compares the color of every pixel to decide whether two looks are the same.</p></details>\n    <details><summary>What parts are there?</summary><p>Humans (male and female, five skin tones), Gold, Ghost, Skeleton, Robot, five cat patterns and eight dog breeds. Hair and hats, glasses, mouths, facial hair, moles and scars, earrings, neckwear, hair accessories and headsets: the same parts as IID Punks. Extra parts only in 42gAvaterMaker: body-type face shapes (Chubby, Skinny, Muscular), Side Part, Curly Quiff, Wavy Short, Suit &amp; Tie, T-Shirt, Hoodie Down and a Joint (mouth).</p></details>\n    <details><summary>Where do I get the image of my avatar?</summary><p>A minted avatar's image shows up as it is on marketplaces and on 42GRAM. For a design you haven't minted, copy the DNA and bring it back any time with Restore.</p></details>"}};
+  let LANG = "ja";
+  try { const l = localStorage.getItem("42gam.lang"); if (l === "ja" || l === "en") LANG = l; } catch {}
+  const t = (k, v = {}) => String(STRINGS[LANG][k] ?? STRINGS.ja[k] ?? k).replace(/\{(\w+)\}/g, (_, x) => v[x] ?? "");
+  const itemName = it => (LANG === "en" ? it.name : it.ja);
+  function applyLang() {
+    document.documentElement.lang = LANG;
+    for (const el of document.querySelectorAll("[data-i18n]")) el.textContent = t(el.dataset.i18n);
+    for (const el of document.querySelectorAll("[data-i18n-html]")) el.innerHTML = t(el.dataset.i18nHtml);
+    for (const el of document.querySelectorAll("[data-i18n-ph]")) el.placeholder = t(el.dataset.i18nPh);
+    for (const el of document.querySelectorAll("[data-i18n-aria]")) { el.setAttribute("aria-label", t(el.dataset.i18nAria)); el.title = t(el.dataset.i18nAria); }
+    for (const b of document.querySelectorAll("[data-lang]")) b.setAttribute("aria-pressed", b.dataset.lang === LANG);
+    const n = document.getElementById("leadN"); if (n && typeof PT !== "undefined") n.textContent = PT.names.length;
+  }
   const E = PunkEngine, O = PunkOnchain;
   E.init(PARTS);
   const P = E.P;
   const PT = O.buildParts(), STRS = O.buildStrings();
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const toast = m => { const t = $("toast"); t.textContent = m; t.style.display = "block"; clearTimeout(toast.h); toast.h = setTimeout(() => t.style.display = "none", 1600); };
+  const toast = m => { const el = $("toast"); el.textContent = m; el.style.display = "block"; clearTimeout(toast.h); toast.h = setTimeout(() => el.style.display = "none", 1600); };
   const svgOf = s => E.toSVG(E.render(E.build(s).recipe));
 
   // ---- minted designs: same lookHash as the contract, asked with lookTaken(bytes32) ----
@@ -275,10 +290,8 @@ footer a{color:#fff}
     if (my !== checkSeq) return;           // a newer design was picked meanwhile
     const st = $("mstat"), mint = $("mint");
     st.className = "mstat" + (taken === true ? " taken" : taken === false ? " free" : "");
-    st.textContent = taken === true ? "このデザインはミント済みです。パーツを1つ変えるとミントできます。"
-      : taken === false ? "このデザインはまだミントされていません。"
-      : "ミント済みかどうかは、コントラクト公開後に確認できます。";
-    mint.textContent = taken === true ? "ミント済みのデザイン" : "CAW NAMEで無料ミント（準備中）";
+    st.textContent = taken === true ? t("mstat_taken") : taken === false ? t("mstat_free") : t("mstat_unknown");
+    mint.textContent = taken === true ? t("mint_taken") : t("mint_btn");
     mint.setAttribute("aria-disabled", "true");
   }
   // for checking the page before the contract exists: window.__g42.markMinted() marks the current design
@@ -290,8 +303,8 @@ footer a{color:#fff}
     if (GRAM_URL) { a.href = GRAM_URL; a.target = "_blank"; a.rel = "noopener"; }
     else {
       a.removeAttribute("href"); a.classList.add("off"); a.setAttribute("aria-disabled", "true");
-      a.title = "42GRAMのURLは準備中です";
-      a.addEventListener("click", () => toast("42GRAMへのリンクは準備中です"));
+      a.title = t("gram_soon");
+      a.addEventListener("click", () => toast(t("gram_soon")));
       if (a.hasAttribute("data-gram") && !a.closest("header")) a.textContent = a.textContent.replace("→", "（準備中）");
     }
   }
@@ -314,94 +327,93 @@ footer a{color:#fff}
   }
   const set = (k, v) => commit({ ...sel, [k]: v });
 
-  const TABS = [["type", "ベース"], ["face", "フェイス"], ["head", "髪・帽子"], ["eyes", "目元"], ["mouth", "口"],
-    ["facial", "ヒゲ"], ["mark", "顔の特徴"], ["ear", "ピアス"], ["neck", "首"], ["acc", "髪飾り・ギア"], ["special", "特別アイテム"]];
+  const TABS = ["type", "face", "head", "eyes", "mouth", "facial", "mark", "ear", "neck", "acc", "special"].map(k => [k, "tab_" + k]);
 
   const colorRow = (title, key, table) => ({ title, key, swatches: table.map((c, i) => ({ i, name: c[0], hex: Array.isArray(c[1]) ? c[1][0] : c[1] })) });
-  const itemGroup = (title, key, list, nameOf = x => x[1] || "なし") => ({ title, key, items: list.map(([x, i]) => ({ i, name: nameOf(x) })) });
+  const itemGroup = (title, key, list, nameOf = x => x[1] || t("none")) => ({ title, key, items: list.map(([x, i]) => ({ i, name: nameOf(x) })) });
 
-  function groupsFor(t) {
+  function groupsFor(tk) {
     const o = E.options(sel), g = [];
     const hl = ["Male", "Female", "Gold"].includes(sel.type);
     const uses = (item, c) => item && item[4] === c;
-    if (t === "type") {
-      g.push({ title: "ベース", key: "type", items: E.TYPES.map(n => ({ i: n, name: n })) });
+    if (tk === "type") {
+      g.push({ title: t("g_base"), key: "type", items: E.TYPES.map(n => ({ i: n, name: n })) });
       if (sel.type === "Male" || sel.type === "Female")
-        g.push({ title: "肌の色", key: "skin", swatches: P.SKIN_NAMES.map((n, i) => ({ i, name: n, hex: P.SKINS[n][0] })) });
+        g.push({ title: t("g_skin"), key: "skin", swatches: P.SKIN_NAMES.map((n, i) => ({ i, name: n, hex: P.SKINS[n][0] })) });
       if (sel.type === "Cat") {
-        g.push({ title: "柄", key: "catPattern", items: P.CAT_PATTERNS.map((c, i) => ({ i, name: c[1] })) });
+        g.push({ title: t("g_pattern"), key: "catPattern", items: P.CAT_PATTERNS.map((c, i) => ({ i, name: c[1] })) });
         if (P.CAT_PATTERNS[sel.catPattern || 0][2] === null)
-          g.push({ title: "毛色", key: "catFur", swatches: P.CAT_FUR_NAMES.map((n, i) => ({ i, name: n, hex: P.CAT_FUR[n][0] })) });
-        if (!P.CAT_PATTERNS[sel.catPattern || 0][4]) g.push(colorRow("目の色", "catEye", P.CAT_EYES));
+          g.push({ title: t("g_fur"), key: "catFur", swatches: P.CAT_FUR_NAMES.map((n, i) => ({ i, name: n, hex: P.CAT_FUR[n][0] })) });
+        if (!P.CAT_PATTERNS[sel.catPattern || 0][4]) g.push(colorRow(t("g_catEye"), "catEye", P.CAT_EYES));
       }
       if (sel.type === "Dog") {
-        g.push({ title: "犬種", key: "dogBreed", items: P.DOG_BREEDS.map((b, i) => ({ i, name: b[1] })) });
+        g.push({ title: t("g_breed"), key: "dogBreed", items: P.DOG_BREEDS.map((b, i) => ({ i, name: b[1] })) });
         const b = P.DOG_BREEDS[sel.dogBreed || 0];
-        if (b[4].length > 1) g.push({ title: "毛色", key: "dogColor", swatches: b[4].map((c, i) => ({ i, name: c[0], hex: c[1][0] })) });
+        if (b[4].length > 1) g.push({ title: t("g_fur"), key: "dogColor", swatches: b[4].map((c, i) => ({ i, name: c[0], hex: c[1][0] })) });
       }
-    } else if (t === "face") {
+    } else if (tk === "face") {
       if (!hl) return null;
-      g.push(itemGroup("輪郭", "shape", o.shape, x => x[1] || "標準"));
-      g.push(itemGroup("目つき", "expr", o.expr, x => x[1] || "標準"));
-      g.push(itemGroup("鼻", "nose", o.nose, x => x[1] || "標準"));
-      g.push(colorRow("瞳の色", "iris", P.IRIS_COLORS));
-    } else if (t === "head") {
+      g.push(itemGroup(t("g_shape"), "shape", o.shape, x => x[1] || t("std")));
+      g.push(itemGroup(t("g_expr"), "expr", o.expr, x => x[1] || t("std")));
+      g.push(itemGroup(t("g_nose"), "nose", o.nose, x => x[1] || t("std")));
+      g.push(colorRow(t("g_iris"), "iris", P.IRIS_COLORS));
+    } else if (tk === "head") {
       if (o.head.length <= 1) return null;
-      g.push(itemGroup("髪型・帽子", "head", o.head));
+      g.push(itemGroup(t("g_head"), "head", o.head));
       const h = P.HEAD[sel.head || 0];
-      if (uses(h, "hair")) g.push(colorRow("髪の色", "hairColor", P.HAIR_COLORS));
-      if (uses(h, "hat")) g.push(colorRow("帽子の色", "hatColor", P.HAT_COLORS));
-    } else if (t === "eyes") {
+      if (uses(h, "hair")) g.push(colorRow(t("g_hairColor"), "hairColor", P.HAIR_COLORS));
+      if (uses(h, "hat")) g.push(colorRow(t("g_hatColor"), "hatColor", P.HAT_COLORS));
+    } else if (tk === "eyes") {
       if (o.eyes.length <= 1) return null;
-      g.push(itemGroup("メガネ・目元", "eyes", o.eyes));
+      g.push(itemGroup(t("g_eyes"), "eyes", o.eyes));
       const e = P.EYES[sel.eyes || 0];
-      if (uses(e, "lens")) g.push(colorRow("レンズの色", "lensColor", P.LENS_COLORS));
-      if (uses(e, "laser")) g.push(colorRow("レーザーの色", "laserColor", P.LASER_COLORS));
-      if (uses(e, "shadow")) g.push(colorRow("シャドウの色", "shadowColor", P.SHADOW_COLORS));
-    } else if (t === "mouth") {
+      if (uses(e, "lens")) g.push(colorRow(t("g_lens"), "lensColor", P.LENS_COLORS));
+      if (uses(e, "laser")) g.push(colorRow(t("g_laser"), "laserColor", P.LASER_COLORS));
+      if (uses(e, "shadow")) g.push(colorRow(t("g_shadow"), "shadowColor", P.SHADOW_COLORS));
+    } else if (tk === "mouth") {
       if (!o.mouth.length) return null;
-      g.push(itemGroup("口元", "mouth", o.mouth));
-      if (hl && uses(P.MOUTH[sel.mouth || 0], "lips")) g.push(colorRow("口紅の色", "lipColor", P.LIP_COLORS));
-    } else if (t === "facial") {
+      g.push(itemGroup(t("g_mouth"), "mouth", o.mouth));
+      if (hl && uses(P.MOUTH[sel.mouth || 0], "lips")) g.push(colorRow(t("g_lips"), "lipColor", P.LIP_COLORS));
+    } else if (tk === "facial") {
       if (!o.facial.length) return null;
-      g.push(itemGroup("ヒゲ", "facial", o.facial));
-      if (uses(P.FACIAL[sel.facial || 0], "beard")) g.push(colorRow("ヒゲの色", "beardColor", P.BEARD_OPTS));
-    } else if (t === "mark") {
+      g.push(itemGroup(t("g_facial"), "facial", o.facial));
+      if (uses(P.FACIAL[sel.facial || 0], "beard")) g.push(colorRow(t("g_beard"), "beardColor", P.BEARD_OPTS));
+    } else if (tk === "mark") {
       if (!o.face.length) return null;
-      g.push(itemGroup("ほくろ・傷・メイクなど", "face", o.face));
-    } else if (t === "ear") {
+      g.push(itemGroup(t("g_face"), "face", o.face));
+    } else if (tk === "ear") {
       if (!o.ear.length) return null;
-      g.push(itemGroup("ピアス", "ear", o.ear));
+      g.push(itemGroup(t("g_ear"), "ear", o.ear));
       const e = P.EAR[sel.ear || 0];
-      if (uses(e, "metal")) g.push(colorRow("金属の色", "metal", P.METALS));
-      if (uses(e, "hat")) g.push(colorRow("羽根の色", "hatColor", P.HAT_COLORS));
-    } else if (t === "neck") {
+      if (uses(e, "metal")) g.push(colorRow(t("g_metal"), "metal", P.METALS));
+      if (uses(e, "hat")) g.push(colorRow(t("g_feather"), "hatColor", P.HAT_COLORS));
+    } else if (tk === "neck") {
       if (!o.neck.length) return null;
-      g.push(itemGroup("首まわり", "neck", o.neck));
+      g.push(itemGroup(t("g_neck"), "neck", o.neck));
       const n = P.NECK[sel.neck || 0];
-      if (uses(n, "metal")) g.push(colorRow("金属の色", "metal", P.METALS));
-      if (uses(n, "hat")) g.push(colorRow({ suit: "ネクタイの色", tshirt: "Tシャツの色", hooddown: "パーカーの色" }[n[0]] || "蝶ネクタイの色", "hatColor", P.HAT_COLORS));
-    } else if (t === "acc") {
+      if (uses(n, "metal")) g.push(colorRow(t("g_metal"), "metal", P.METALS));
+      if (uses(n, "hat")) g.push(colorRow(t({ suit: "g_tie", tshirt: "g_tshirt", hooddown: "g_hoodie" }[n[0]] || "g_bowtie"), "hatColor", P.HAT_COLORS));
+    } else if (tk === "acc") {
       if (!o.hacc.length && !o.gear.length) return null;
       if (o.hacc.length) {
-        g.push(itemGroup("髪飾り", "hacc", o.hacc));
-        if (uses(P.HAIR_ACC[sel.hacc || 0], "hat")) g.push(colorRow("リボンの色", "hatColor", P.HAT_COLORS));
+        g.push(itemGroup(t("g_hacc"), "hacc", o.hacc));
+        if (uses(P.HAIR_ACC[sel.hacc || 0], "hat")) g.push(colorRow(t("g_ribbon"), "hatColor", P.HAT_COLORS));
       }
-      if (o.gear.length) g.push(itemGroup("ギア", "gear", o.gear));
+      if (o.gear.length) g.push(itemGroup(t("g_gear"), "gear", o.gear));
     }
     return g;
   }
 
   function drawTabs() {
     $("tabs").innerHTML = TABS.map(([k, l]) =>
-      `<button role="tab" data-tab="${k}" aria-selected="${k === tab}" class="${k === tab ? "on" : ""} ${k === "special" ? "sp" : groupsFor(k) ? "" : "na"}">${l}</button>`).join("");
+      `<button role="tab" data-tab="${k}" aria-selected="${k === tab}" class="${k === tab ? "on" : ""} ${k === "special" ? "sp" : groupsFor(k) ? "" : "na"}">${t(l)}</button>`).join("");
   }
   const picOf = (s, items) => E.toSVG(E.render(E.build(s).recipe, items));
   // a hair color item only shows when hair pixels are on the picture (not under a special hat, not on a bald head)
   const hairShows = (s, items) => E.compose(E.build(s).recipe, items.filter(i => i.slot !== "hair")).flat().some(c => c === "H" || c === "i" || c === "j");
   function drawSpecial() {
     const rc = E.build(sel).recipe;
-    $("pane").innerHTML = `<div class="spnote">特別アイテムは、ミントしたアバターにあとから付け外しできる別のNFTです。${SI.LAUNCH_GIFT ? "<b>ローンチ記念：期間中は、アバター1体につき全11種を1つずつ無料でもらえます。</b>" : ""}ここでは試着できます（受け取りと装着はコントラクト公開後）。付けた場所の元のパーツは、表示上だけ隠れます。</div>` +
+    $("pane").innerHTML = `<div class="spnote">${t("sp_note")}</div>` +
       SI.SLOTS.map(slot => {
         const list = SI.ITEMS.filter(i => i.slot === slot);
         const cur = equipped[slot];
@@ -414,15 +426,15 @@ footer a{color:#fff}
           const items = it ? [...others, it] : others;
           return `<button class="opt${on ? " on" : ""}" data-slot="${slot}" data-item="${it ? it.id : 0}" aria-pressed="${on}" ${dis ? "disabled" : ""}>
             <div class="th">${E.toSVG(E.render(rc, items))}</div>
-            <div class="nm">${it ? esc(it.ja) : "なし"}</div>${it ? `<div class="pr">${SI.LAUNCH_GIFT ? "ローンチ記念 無料" : it.price === null ? "価格未定" : esc(it.price)}</div>` : ""}</button>`;
+            <div class="nm">${it ? esc(itemName(it)) : t("none")}</div>${it ? `<div class="pr">${SI.LAUNCH_GIFT ? t("price_free") : it.price === null ? t("price_tbd") : esc(it.price)}</div>` : ""}</button>`;
         };
-        return `<div class="group"><h4>${SI.SLOT_JA[slot]}${noHat ? "（このベースは帽子を付けられません）" : ""}${noHair ? "（髪が見えていないので、髪色は変えられません）" : ""}</h4><div class="grid">${cell(null)}${list.map(cell).join("")}</div></div>`;
+        return `<div class="group"><h4>${t("slot_" + slot)}${noHat ? t("no_hat") : ""}${noHair ? t("no_hair") : ""}</h4><div class="grid">${cell(null)}${list.map(cell).join("")}</div></div>`;
       }).join("");
   }
   function drawPane() {
     if (tab === "special") { drawSpecial(); return; }
     let groups = groupsFor(tab);
-    if (!groups) { $("pane").innerHTML = `<div class="note">このベース（${esc(sel.type)}）では、このパーツは使えません。</div>`; return; }
+    if (!groups) { $("pane").innerHTML = `<div class="note">${esc(t("not_for_base", { b: sel.type }))}</div>`; return; }
     $("pane").innerHTML = groups.map((g, gi) => {
       if (g.items) return `<div class="group"><h4>${g.title}</h4><div class="grid">${g.items.map(it => {
         const on = g.key === "type" ? sel.type === it.i : (sel[g.key] ?? 0) === it.i;
@@ -436,7 +448,7 @@ footer a{color:#fff}
     if (equipped.hat && !hatOk(sel)) delete equipped.hat;
     const b = E.build(sel), grid = E.render(b.recipe, eqItems());
     $("stage").innerHTML = E.toSVG(grid);
-    $("eqlist").innerHTML = eqItems().length ? SI.SLOTS.filter(sl => equipped[sl]).map(sl => `<li>${SI.SLOT_JA[sl]}：${esc(equipped[sl].ja)}</li>`).join("") : "<li style='background:transparent'>なし</li>";
+    $("eqlist").innerHTML = eqItems().length ? SI.SLOTS.filter(sl => equipped[sl]).map(sl => `<li>${t("slot_" + sl)}: ${esc(itemName(equipped[sl]))}</li>`).join("") : `<li style='background:transparent'>${t("none")}</li>`;
     const dna = E.encode(sel);
     $("dna").textContent = dna;
     const SLOT_TRAIT = { hat: "Special Hat", eyes: "Special Eyes", mouth: "Special Mouth", neck: "Special Neck", bg: "Background", hair: "Hair Color" };
@@ -452,10 +464,10 @@ footer a{color:#fff}
   // ---- events ----
   $("tabs").addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (b) { tab = b.dataset.tab; drawTabs(); drawPane(); } });
   $("pane").addEventListener("click", e => {
-    const t = e.target.closest("[data-slot]");
-    if (t && !t.disabled) {
-      const id = Number(t.dataset.item);
-      if (id) equipped[t.dataset.slot] = SI.ITEMS.find(i => i.id === id); else delete equipped[t.dataset.slot];
+    const slotBtn = e.target.closest("[data-slot]");
+    if (slotBtn && !slotBtn.disabled) {
+      const id = Number(slotBtn.dataset.item);
+      if (id) equipped[slotBtn.dataset.slot] = SI.ITEMS.find(i => i.id === id); else delete equipped[slotBtn.dataset.slot];
       drawPane(); drawLeft(); return;
     }
     const b = e.target.closest("[data-k]"); if (!b) return;
@@ -468,16 +480,21 @@ footer a{color:#fff}
   document.addEventListener("keydown", e => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && e.target.tagName !== "INPUT") { e.preventDefault(); (e.shiftKey ? $("redo") : $("undo")).click(); }
   });
-  const copy = async (text, ok) => { try { await navigator.clipboard.writeText(text); toast(ok); } catch { toast("コピーできませんでした"); } };
-  $("copyDna").onclick = () => copy(E.encode(sel), "DNAをコピーしました");
+  const copy = async (text, ok) => { try { await navigator.clipboard.writeText(text); toast(ok); } catch { toast(t("copy_fail")); } };
+  $("copyDna").onclick = () => copy(E.encode(sel), t("dna_copied"));
   $("loadDna").onclick = () => {
     const v = $("dnaIn").value.trim(); if (!v) return;
-    try { if (!/^0x[0-9a-fA-F]{64}$/.test(v)) throw 0; const s = E.decode(v); if (!s.type) throw 0; commit(s); $("dnaIn").value = ""; toast("復元しました"); }
-    catch { toast("DNAが正しくありません"); }
+    try { if (!/^0x[0-9a-fA-F]{64}$/.test(v)) throw 0; const s = E.decode(v); if (!s.type) throw 0; commit(s); $("dnaIn").value = ""; toast(t("restored")); }
+    catch { toast(t("dna_bad")); }
   };
-  $("mint").onclick = () => toast(mintedCache.get(lookOf(sel)) ? "このデザインはミント済みです" : "CAW NAMEでのミントはコントラクト公開後に使えます");
+  $("mint").onclick = () => toast(mintedCache.get(lookOf(sel)) ? t("minted_toast") : t("mint_soon"));
 
-  $("leadN").textContent = PT.names.length;
+  applyLang();
+  for (const b of document.querySelectorAll("[data-lang]")) b.onclick = () => {
+    LANG = b.dataset.lang;
+    try { localStorage.setItem("42gam.lang", LANG); } catch {}
+    applyLang(); draw(); fillGallery(false);
+  };
   // ---- pictures for the three steps ----
   {
     const demo = E.randomize(Math.random, "Female");
@@ -501,7 +518,7 @@ footer a{color:#fff}
       let its = Math.random() < 0.35 ? SI.SLOTS.filter(sl => Math.random() < 0.4 && (sl !== "hat" || hatOk(s)))
         .map(sl => { const l = SI.ITEMS.filter(i => i.slot === sl); return l[Math.floor(Math.random() * l.length)]; }) : [];
       if (!hairShows(s, its)) its = its.filter(i => i.slot !== "hair");
-      return `<button data-dna="${E.encode(s)}" data-items="${its.map(i => i.id).join(",")}" aria-label="この組み合わせを読み込む">${picOf(s, its)}</button>`;
+      return `<button data-dna="${E.encode(s)}" data-items="${its.map(i => i.id).join(",")}" aria-label="${t("gal_aria")}">${picOf(s, its)}</button>`;
     }).join("");
     $("gal").innerHTML = add ? $("gal").innerHTML + html : html;
   }
@@ -509,7 +526,7 @@ footer a{color:#fff}
     const b = e.target.closest("[data-dna]"); if (!b) return;
     equipped = {};
     for (const id of (b.dataset.items || "").split(",").filter(Boolean)) { const it = SI.ITEMS.find(i => i.id === Number(id)); equipped[it.slot] = it; }
-    commit(E.decode(b.dataset.dna)); location.hash = "#make"; toast("メーカーに読み込みました");
+    commit(E.decode(b.dataset.dna)); location.hash = "#make"; toast(t("loaded"));
   });
   $("more").onclick = () => fillGallery(true);
   fillGallery(false);
