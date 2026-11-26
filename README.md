@@ -85,7 +85,7 @@ AVATARS=<IIDPunksAvatars> ITEMS=<IIDPunksItems> CAW_NAMES=<CawNamesV2> LAUNCH_DA
 ```
 
 **ブラウザ＋MetaMask で配置する場合**（42GRAM の配置ページと同じ考え方）：`node placement/build.js`（先に `forge build`）で
-`placement/dist/avatars-placement.html` を作り、ブラウザで開きます。ページは鍵を持たず、1つずつ MetaMask で承認します。
+`placement/dist/avatars-placement.html` を作り、`http://localhost` から開きます（MetaMask はファイルとして開いたページとはつながりません。Windows なら `placement/windows/start-placement.bat` を同じフォルダーに置いてダブルクリック）。ページは鍵を持たず、1つずつ MetaMask で承認します。
 チェーン ID と最初のブロックが 42 Chain と一致するか、テスト用 CAW NFT のコードが 42GRAM の記録と同じかを確かめ、
 送る前に毎回 eth_call で試算して失敗する内容は送りません。「済み」はいつもチェーンから読み直します。
 

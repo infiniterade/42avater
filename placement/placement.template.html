@@ -427,6 +427,11 @@
   $("copyLog").onclick = async () => { try { await navigator.clipboard.writeText($("log").value); say("記録をコピーしました。", "ok"); } catch { $("log").select(); } };
 
   drawSteps();
+  if (location.protocol === "file:") {
+    say("このページをファイルとして開いています。MetaMask はファイルのページとはつながりません。\n" +
+      "フォルダーの start-placement.bat をダブルクリックして、http://localhost:8642/ から開き直してください。", "ng");
+    $("connect").disabled = true;
+  }
   window.__placement = { state: () => st };
 }
 </script>
