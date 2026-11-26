@@ -328,6 +328,7 @@
   // ---------------- connect ----------------
   $("connect").onclick = () => actS(async () => {
     if (!eth) throw new Error("MetaMask が見つかりません。（ファイルを直接開いている場合は、MetaMask の拡張機能の設定で「ファイルのURLへのアクセスを許可する」をオンにしてください）");
+    say("MetaMask の画面で、このページとの接続を承認してください。\n（承認の画面が見えないときは、ブラウザ右上の MetaMask のアイコンを押してください）", "busy");
     [account] = await rpc("eth_requestAccounts");
     $("who").textContent = "ウォレット: " + account;
     load();
@@ -337,6 +338,7 @@
   });
   $("switch").onclick = () => actS(async () => {
     if (!eth) throw new Error("MetaMask が見つかりません。");
+    say("MetaMask の画面で、42 Chain への切り替えを承認してください。", "busy");
     try { await rpc("wallet_switchEthereumChain", [{ chainId: CHAIN_42.chainId }]); }
     catch (e) {
       if (e && (e.code === 4902 || /unrecognized chain/i.test(String(e.message)))) await rpc("wallet_addEthereumChain", [CHAIN_42]);
