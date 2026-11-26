@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>アバター 配置ページ（42 Chain）</title>
+<style>
+  :root { --ink:#1B1B1B; --dim:#5E646B; --line:#1B1B1B; --paper:#fff; --bg:#F4F1EA; --pink:#FF5FB0; --gold:#F2C230; --ok:#1E7A34; --ng:#B3261E; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, "Noto Sans JP", sans-serif; }
+  header { background:var(--ink); color:#fff; padding:14px 20px; border-bottom:4px solid var(--pink); }
+  header h1 { margin:0; font-size:20px; }
+  header p { margin:4px 0 0; color:#C9CED4; font-size:13px; }
+  main { max-width:980px; margin:0 auto; padding:18px 16px 60px; }
+  section { background:var(--paper); border:3px solid var(--line); box-shadow:5px 5px 0 var(--line); padding:16px 18px; margin:18px 0; }
+  h2 { margin:0 0 10px; font-size:18px; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:8px 0; }
+  button { font:inherit; border:3px solid var(--line); background:var(--paper); padding:7px 12px; min-height:40px; cursor:pointer; box-shadow:3px 3px 0 var(--line); }
+  button.go { background:var(--gold); }
+  button:disabled { opacity:.45; cursor:not-allowed; box-shadow:none; }
+  input { font:15px ui-monospace, Menlo, Consolas, monospace; border:2px solid var(--line); padding:6px 8px; min-height:38px; }
+  input.addr { width:100%; max-width:470px; }
+  label { font-size:13px; color:var(--dim); }
+  .step { display:grid; grid-template-columns: 28px minmax(0,1fr) auto; gap:10px; align-items:center; border-top:1px solid #ddd; padding:8px 0; }
+  .step:first-of-type { border-top:0; }
+  .mark { font-weight:700; text-align:center; }
+  .done .mark { color:var(--ok); } .todo .mark { color:#999; }
+  .sub { font-size:12px; color:var(--dim); word-break:break-all; }
+  .status { position:fixed; left:0; right:0; bottom:0; z-index:10; max-height:40vh; overflow:auto; margin:0; padding:10px 16px;
+    border-top:3px solid var(--line); background:#fff; white-space:pre-wrap; font-size:14px; box-shadow:0 -4px 0 rgba(0,0,0,.08); }
+  body { padding-bottom:150px; }
+  .status[data-kind=ok] { background:#E3F7E5; } .status[data-kind=ng] { background:#FFE1E1; } .status[data-kind=busy] { background:#FFF7D6; }
+  .warn { background:#FFF7D6; border:2px solid var(--line); padding:8px 12px; font-size:14px; }
+  .pic { display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start; }
+  .pic .box { width:200px; height:200px; border:3px solid var(--line); background:#C9CDD2; }
+  .pic .box svg, .pic .box img { width:100%; height:100%; display:block; image-rendering:pixelated; }
+  .items { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:6px; }
+  textarea { width:100%; min-height:150px; font:12px ui-monospace, Menlo, Consolas, monospace; border:2px solid var(--line); padding:8px; }
+  a { color:#1d4ed8; }
+  code { background:#eee; padding:0 4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>IID Punks Avatars 配置ページ（42 Chain）</h1>
+  <p>このページは鍵を持ちません。送信はすべて MetaMask で1つずつ承認します。「済み」はいつもチェーンから読み直します。未監査の実験版です。</p>
+</header>
+<main>
+  <section>
+    <h2>1. つなぐ</h2>
+    <div class="row">
+      <button id="connect" class="go">MetaMaskにつなぐ</button>
+      <button id="switch">42 Chainに切り替える</button>
+      <span id="who" class="sub"></span>
+    </div>
+    <div class="status" id="status">まだつないでいません。</div>
+  </section>
+
+  <section>
+    <h2>2. 配置する（デプロイ）</h2>
+    <p class="sub">前に配置したことがあれば、アドレスを入れて「チェーンから読み直す」を押すと、続きから進められます。</p>
+    <div class="row"><label>IIDPunksRenderer <input class="addr" id="aRenderer" placeholder="0x…"></label></div>
+    <div class="row"><label>IIDPunksItems <input class="addr" id="aItems" placeholder="0x…"></label></div>
+    <div class="row"><label>IIDPunksAvatars <input class="addr" id="aAvatars" placeholder="0x…"></label></div>
+    <div class="row"><label>署名者（ミントの署名をするアドレス。予行演習ではこのウォレット） <input class="addr" id="signer" placeholder="0x…"></label></div>
+    <div class="row"><label>アバターの上限 <input id="maxSupply" value="1000000" size="10"></label>
+      <button id="reload">チェーンから読み直す</button></div>
+    <div id="steps"></div>
+  </section>
+
+  <section>
+    <h2>3. ローンチ後の設定（CAW NAME とローンチ記念）</h2>
+    <div class="warn">CAW NAME の設定は<b>1回だけ・変更できません</b>。テスト用の CAW NFT を設定したこの配置は、本番には使えません（本番は別に配置します）。</div>
+    <div class="row"><label>CAW NAME（CawNamesV2）のアドレス <input class="addr" id="caw"></label></div>
+    <div class="row"><label>ローンチ記念の期間（日） <input id="launchDays" value="30" size="4"></label></div>
+    <div id="steps2"></div>
+  </section>
+
+  <section>
+    <h2>4. 予行演習ミント</h2>
+    <p class="sub">CAW NAME の持ち主のウォレットで行います。署名者のウォレットで署名（MetaMask の署名）→ ミントの送信、の順です。デザインは 42gAvaterMaker でコピーした DNA を貼るか、ランダムで。</p>
+    <div class="row"><label>CAW NAME の番号 <input id="cawId" size="8" placeholder="1"></label><button id="checkCaw">持ち主を確かめる</button><span id="cawInfo" class="sub"></span></div>
+    <div class="row"><label>DNA <input id="dna" size="70" placeholder="0x…（空ならランダム）"></label><button id="preview">プレビュー</button><button id="random">ランダム</button></div>
+    <div class="pic"><div class="box" id="pv"></div><div id="pvInfo" class="sub" style="max-width:520px"></div></div>
+    <div class="row"><button id="mint" class="go">署名してミント</button><button id="claim">ローンチ記念を受け取る</button></div>
+    <div class="row"><label>アバターの番号 <input id="avatarId" size="8"></label></div>
+    <div class="items" id="items"></div>
+    <div class="row"><button id="equip">チェックしたアイテムを付ける</button><button id="read">チェーンから絵を読み出す</button></div>
+    <div class="pic"><div class="box" id="chainPic"></div><div id="chainInfo" class="sub" style="max-width:520px"></div></div>
+  </section>
+
+  <section>
+    <h2>5. 記録</h2>
+    <p class="sub">配置したアドレスと取引です。42GRAM の設定やメーカーの <code>CHAIN</code> に使います。</p>
+    <textarea id="log" readonly></textarea>
+    <div class="row"><button id="copyLog">記録をコピー</button></div>
+  </section>
+</main>
+
+<script>/*PARTS*/</script>
+<script>/*ENGINE*/</script>
+<script>/*KECCAK*/</script>
+<script>/*ONCHAIN*/</script>
+<script>/*ITEMS*/</script>
+<script>/*DEPLOY*/</script>
+<script>
+{
+  // ---------------- fixed settings (never taken from a page or a link) ----------------
+  const CHAIN_42 = { chainId: "0x66c9a", chainName: "42 Chain", rpcUrls: ["https://evm-rpc.infinitedrive.xyz"],
+    nativeCurrency: { name: "42", symbol: "42", decimals: 18 }, blockExplorerUrls: ["https://scan.infinitedrive.xyz"] };
+  const GENESIS = window.__placementTest?.genesis || "0xcdf6d330ca32a6e9d7597c5cf220d77993793a6ea4bc0d8f723ec71f958741ea";
+  // CAW NAME (rehearsal, CawNamesV2) placed by 42GRAM: address and keccak256 of its code (web/src/production-contracts.mjs)
+  const TEST_CAW = window.__placementTest?.caw || { address: "0xa67874FFAD0b8a0c1E587e1357fD03494518176D",
+    codeHash: "0x4266b5a5e3309336ed58a92f75466d2f6f05e2a950e27d0afad80e4449c789a2" };
+  const EXPLORER = "https://scan.infinitedrive.xyz";
+
+  const E = PunkEngine, O = PunkOnchain, SI = SpecialItems;
+  E.init(PARTS);
+  const PT = O.buildParts(), STRS = O.buildStrings();
+  const PARTS_HEX = "0x" + [...O.partsBytes(PT)].map(b => b.toString(16).padStart(2, "0")).join("");
+  const STRS_HEX = "0x" + [...O.stringsBytes(STRS)].map(b => b.toString(16).padStart(2, "0")).join("");
+  const ITEM_DATA = SI.ITEMS.map(it => ({ id: it.id, name: it.name, ja: it.ja, slot: it.slot,
+    data: "0x" + [...O.itemBytes(it)].map(b => b.toString(16).padStart(2, "0")).join("") }));
+  const $ = id => document.getElementById(id);
+  const eth = window.ethereum;
+  let account = null, busy = false;
+
+  // ---------------- tiny ABI encoder / decoder ----------------
+  const strip = h => h.replace(/^0x/, "");
+  const word = n => BigInt(n).toString(16).padStart(64, "0");
+  const toHex = v => typeof v === "string" ? strip(v) : [...v].map(b => b.toString(16).padStart(2, "0")).join("");
+  const padR = h => h + "0".repeat((64 - (h.length % 64)) % 64);
+  function enc(types, values) {
+    let head = "", tail = "";
+    const headLen = types.length * 32;
+    types.forEach((t, i) => {
+      const v = values[i];
+      if (t === "address") head += strip(v).toLowerCase().padStart(64, "0");
+      else if (t === "uint256" || t === "uint8") head += word(v);
+      else if (t === "bool") head += word(v ? 1 : 0);
+      else if (t === "bytes32") head += strip(v).padStart(64, "0");
+      else {
+        head += word(headLen + tail.length / 2);
+        if (t === "bytes") { const h = toHex(v); tail += word(h.length / 2) + padR(h); }
+        else if (t === "string") { const h = toHex(new TextEncoder().encode(v)); tail += word(h.length / 2) + padR(h); }
+        else if (t === "uint256[]") tail += word(v.length) + v.map(word).join("");
+        else throw new Error("type " + t);
+      }
+    });
+    return head + tail;
+  }
+  const sel = sig => keccak256(sig).slice(0, 10);
+  const call = (sig, types = [], values = []) => sel(sig) + enc(types, values);
+  const decUint = r => BigInt(r && r !== "0x" ? r.slice(0, 66) : "0x0");
+  const decAddr = r => "0x" + strip(r).slice(24, 64);
+  const decString = r => {
+    const h = strip(r), off = Number(BigInt("0x" + h.slice(0, 64))) * 2, len = Number(BigInt("0x" + h.slice(off, off + 64)));
+    const hex = h.slice(off + 64, off + 64 + len * 2);
+    return new TextDecoder().decode(Uint8Array.from(hex.match(/../g) || [], x => parseInt(x, 16)));
+  };
+  const same = (a, b) => String(a || "").toLowerCase() === String(b || "").toLowerCase();
+  const isAddr = a => /^0x[0-9a-fA-F]{40}$/.test(a || "");
+
+  // ---------------- chain helpers ----------------
+  const rpc = (method, params = []) => eth.request({ method, params });
+  const view = async (to, data) => rpc("eth_call", [{ to, data }, "latest"]);
+  async function code(a) { return isAddr(a) ? rpc("eth_getCode", [a, "latest"]) : "0x"; }
+  async function waitReceipt(hash) {
+    for (let i = 0; i < 300; i++) {
+      const r = await rpc("eth_getTransactionReceipt", [hash]);
+      if (r) { if (r.status !== "0x1") throw new Error("取引が失敗しました: " + hash); return r; }
+      await new Promise(res => setTimeout(res, 2000));
+    }
+    throw new Error("取引の結果がまだ分かりません。エクスプローラーで確かめてから、読み直してください: " + hash);
+  }
+  const KNOWN = { "0x7e273289": "その番号のトークンはありません", "0x03dee4c5": "アイテムが足りません（持っていません）",
+    "0x64283d7b": "そのトークンの持ち主ではありません", "0x118cdaa7": "このウォレットには権限がありません（オーナーではありません）" };
+  const reason = e => {
+    const t = String(e && (e.data && (e.data.message || e.data.data && e.data.data.message) || e.message) || e).replace(/^.*execution reverted:?\s*/i, "");
+    const m = t.match(/0x[0-9a-f]{8}/i); return m && KNOWN[m[0].toLowerCase()] ? KNOWN[m[0].toLowerCase()] + "（" + m[0] + "）" : t.trim();
+  };
+  async function send(tx, label) {
+    await assertChain();
+    // try it first without sending: a send that would fail is never sent (no gas wasted)
+    say(label + "：送る前に確かめています…", "busy");
+    try { await rpc("eth_call", [{ from: account, ...tx }, "latest"]); }
+    catch (e) { throw new Error(label + "：送る前の確認で失敗したので、送りませんでした。理由: " + reason(e)); }
+    say(label + "：MetaMask で承認してください…", "busy");
+    const hash = await rpc("eth_sendTransaction", [{ from: account, ...tx }]);
+    logTx(label, hash);
+    say(label + "：チェーンに入るのを待っています…\n" + EXPLORER + "/tx/" + hash, "busy");
+    return waitReceipt(hash);
+  }
+  async function assertChain() {
+    if (!eth) throw new Error("MetaMask が見つかりません。（ファイルを直接開いている場合は、MetaMask の拡張機能の設定で「ファイルのURLへのアクセスを許可する」をオンにしてください）");
+    if (!account) throw new Error("先に「MetaMaskにつなぐ」を押してください。");
+    const id = await rpc("eth_chainId");
+    if (BigInt(id) !== 421018n) throw new Error("ウォレットのネットワークが 42 Chain ではありません。「42 Chainに切り替える」を押してください。");
+    const g = await rpc("eth_getBlockByNumber", ["0x0", false]);
+    if (!same(g && g.hash, GENESIS)) throw new Error("接続先のチェーンが 42 Chain と一致しません（最初のブロックが違います）。送信しません。");
+  }
+
+  // ---------------- record ----------------
+  const key = () => "g42-avatars-placement:v1:421018:" + String(account).toLowerCase();
+  let rec = { txs: [] };
+  function load() { try { rec = JSON.parse(localStorage.getItem(key()) || "{}"); } catch { rec = {}; } rec.txs = rec.txs || []; }
+  function save() {
+    rec.renderer = $("aRenderer").value.trim(); rec.items = $("aItems").value.trim(); rec.avatars = $("aAvatars").value.trim();
+    try { localStorage.setItem(key(), JSON.stringify(rec)); } catch {}
+    $("log").value = JSON.stringify({ chainId: 421018, deployer: account, renderer: rec.renderer || null, items: rec.items || null,
+      avatars: rec.avatars || null, cawNames: rec.cawNames || null, codeHashes: rec.codeHashes || {}, transactions: rec.txs }, null, 2);
+  }
+  function logTx(label, hash) { rec.txs.push({ label, hash, at: new Date().toISOString() }); save(); }
+  function say(t, kind = "") { $("status").textContent = t; $("status").dataset.kind = kind; }
+
+  // ---------------- state, always read back from the chain ----------------
+  let st = {};
+  async function readState() {
+    await assertChain();
+    const R = $("aRenderer").value.trim(), I = $("aItems").value.trim(), A = $("aAvatars").value.trim();
+    st = { R, I, A };
+    st.rOk = (await code(R)).length > 2 && same(decAddr(await view(R, call("deployer()"))), account);
+    st.parts = st.rOk && decAddr(await view(R, call("parts()"))) !== "0x" + "0".repeat(40);
+    if (st.parts) st.sprites = Number(decUint(await view(R, call("spriteCount()"))));
+    st.iOk = (await code(I)).length > 2 && st.rOk && same(decAddr(await view(I, call("renderer()"))), R);
+    if (st.iOk) {
+      st.iAvatars = decAddr(await view(I, call("avatars()")));
+      st.itemCount = Number(decUint(await view(I, call("itemCount()"))));
+      st.launchEnd = Number(decUint(await view(I, call("launchEnd()"))));
+    }
+    st.aOk = (await code(A)).length > 2 && st.iOk && same(decAddr(await view(A, call("renderer()"))), R)
+      && same(decAddr(await view(A, call("itemsContract()"))), I);
+    if (st.aOk) {
+      st.cawSet = decUint(await view(A, call("cawConfigured()"))) !== 0n;
+      st.cawNames = decAddr(await view(A, call("cawNames()")));
+      st.signer = decAddr(await view(A, call("signer()")));
+    }
+    st.linked = st.aOk && same(st.iAvatars, A);
+    rec.codeHashes = {};
+    for (const [k, a] of [["renderer", R], ["items", I], ["avatars", A]]) if (isAddr(a)) { const c = await code(a); if (c.length > 2) rec.codeHashes[k] = keccak256(Uint8Array.from(strip(c).match(/../g), x => parseInt(x, 16))); }
+    if (st.cawSet) rec.cawNames = st.cawNames;
+    save(); drawSteps();
+  }
+
+  const STEPS = [
+    ["Renderer を置く", () => st.rOk, async () => {
+      const r = await send({ data: DEPLOY.renderer }, "IIDPunksRenderer を置く");
+      $("aRenderer").value = r.contractAddress; save(); }],
+    ["パーツを書き込む（1回だけ・約460万ガス）", () => st.parts, async () => {
+      await send({ to: st.R, data: call("setData(bytes,bytes)", ["bytes", "bytes"], [PARTS_HEX, STRS_HEX]) }, "パーツを書き込む"); }],
+    ["Items を置く", () => st.iOk, async () => {
+      const r = await send({ data: DEPLOY.items + enc(["address"], [st.R]) }, "IIDPunksItems を置く");
+      $("aItems").value = r.contractAddress; save(); }],
+    ["Avatars を置く", () => st.aOk, async () => {
+      const signer = $("signer").value.trim() || account;
+      if (!isAddr(signer)) throw new Error("署名者のアドレスが正しくありません。");
+      const r = await send({ data: DEPLOY.avatars + enc(["address", "address", "address", "uint256", "uint256"],
+        [st.R, st.I, signer, 0, BigInt($("maxSupply").value || "1000000")]) }, "IIDPunksAvatars を置く");
+      $("aAvatars").value = r.contractAddress; save(); }],
+    ["Items と Avatars をつなぐ", () => st.linked, async () => {
+      await send({ to: st.I, data: call("setAvatars(address)", ["address"], [st.A]) }, "setAvatars"); }],
+    [`特別アイテムを登録する（${ITEM_DATA.length}種、1つずつ承認）`, () => st.iOk && st.itemCount >= ITEM_DATA.length, async () => {
+      for (let i = st.itemCount; i < ITEM_DATA.length; i++) {
+        const it = ITEM_DATA[i];
+        await send({ to: st.I, data: call("addItem(bytes,string,uint256,uint256)", ["bytes", "string", "uint256", "uint256"], [it.data, it.name, 0, 0]) },
+          `アイテム ${i + 1}/${ITEM_DATA.length}「${it.ja}」を登録`);
+        st.itemCount = i + 1;
+      } }],
+  ];
+  const STEPS2 = [
+    ["CAW NAME を設定する（1回だけ・変更不可）", () => st.cawSet, async () => {
+      const caw = $("caw").value.trim();
+      if (!isAddr(caw)) throw new Error("CAW NAME のアドレスが正しくありません。");
+      const c = await code(caw);
+      if (c.length <= 2) throw new Error("そのアドレスにはコントラクトがありません。");
+      if (same(caw, TEST_CAW.address) && keccak256(Uint8Array.from(strip(c).match(/../g), x => parseInt(x, 16))) !== TEST_CAW.codeHash)
+        throw new Error("テスト用 CAW NFT のコードが、42GRAM に記録されたものと一致しません。送信しません。");
+      const is721 = decUint(await view(caw, call("supportsInterface(bytes4)", ["bytes32"], ["80ac58cd" + "0".repeat(56)]))) !== 0n;
+      if (!is721) throw new Error("そのコントラクトは ERC-721 ではありません。");
+      if (!confirm(`CAW NAME を ${caw} に設定します。1回だけで、変更できません。よろしいですか？`)) return;
+      await send({ to: st.A, data: call("setCawNames(address)", ["address"], [caw]) }, "setCawNames"); }],
+    ["ローンチ記念を開始する（全アイテム）", () => st.launchEnd > Date.now() / 1000, async () => {
+      const days = Number($("launchDays").value || "30");
+      const end = Math.floor(Date.now() / 1000) + days * 86400;
+      await send({ to: st.I, data: call("setLaunch(uint256[],uint256)", ["uint256[]", "uint256"], [ITEM_DATA.map(i => i.id), end]) }, "setLaunch"); }],
+  ];
+  function drawList(el, steps) {
+    let firstTodo = true;
+    el.innerHTML = "";
+    steps.forEach(([label, done, run]) => {
+      const d = !!done(), div = document.createElement("div");
+      div.className = "step " + (d ? "done" : "todo");
+      div.innerHTML = `<div class="mark">${d ? "済" : "・"}</div><div>${label}</div>`;
+      const b = document.createElement("button"); b.textContent = d ? "済み" : "送る";
+      b.disabled = d || !firstTodo || busy || !account;
+      if (!d) firstTodo = false;
+      b.onclick = () => act(run, true);
+      div.appendChild(b); el.appendChild(div);
+    });
+  }
+  const deployedAll = () => st.rOk && st.parts && st.iOk && st.aOk && st.linked && st.itemCount >= ITEM_DATA.length;
+  function drawSteps() {
+    drawList($("steps"), STEPS);
+    drawList($("steps2"), deployedAll() ? STEPS2 : STEPS2.map(([l]) => [l + "（先に2を済ませてください）", () => false, async () => {}]));
+  }
+  function summary() {
+    const deployed = deployedAll();
+    if (deployed) {
+      const lines = [`配置は済んでいます。パーツ ${st.sprites} 種、特別アイテム ${st.itemCount} 種。`,
+        `署名者: ${st.signer}`, st.cawSet ? `CAW NAME: ${st.cawNames}` : "CAW NAME はまだ設定していません（ミントできません）。",
+        st.launchEnd ? `ローンチ記念: ${new Date(st.launchEnd * 1000).toLocaleString()} まで` : "ローンチ記念はまだ開始していません。"];
+      say(lines.join("\n"), "ok");
+    } else if (account && !busy) {
+      const next = STEPS.find(([, done]) => !done());
+      say(next ? `次は「${next[0]}」です。ボタンを押すと MetaMask が開きます。` : "", "");
+    }
+  }
+  // showSummary: placement steps show the state summary afterwards; the mint section keeps its own message
+  async function act(fn, showSummary = false) {
+    if (busy) return;
+    busy = true; drawSteps(); say("確かめています…", "busy");
+    try { await fn(); busy = false; if (account) await readState(); if (showSummary) summary(); }
+    catch (e) { say(String(e && (e.data && e.data.message || e.message) || e), "ng"); }
+    finally { busy = false; drawSteps(); }
+  }
+
+  const actS = fn => act(fn, true);
+  // ---------------- connect ----------------
+  $("connect").onclick = () => actS(async () => {
+    if (!eth) throw new Error("MetaMask が見つかりません。（ファイルを直接開いている場合は、MetaMask の拡張機能の設定で「ファイルのURLへのアクセスを許可する」をオンにしてください）");
+    [account] = await rpc("eth_requestAccounts");
+    $("who").textContent = "ウォレット: " + account;
+    load();
+    $("aRenderer").value = rec.renderer || ""; $("aItems").value = rec.items || ""; $("aAvatars").value = rec.avatars || "";
+    if (!$("signer").value) $("signer").value = account;
+    say("つながりました。チェーンを確かめています…", "busy");
+  });
+  $("switch").onclick = () => actS(async () => {
+    if (!eth) throw new Error("MetaMask が見つかりません。");
+    try { await rpc("wallet_switchEthereumChain", [{ chainId: CHAIN_42.chainId }]); }
+    catch (e) {
+      if (e && (e.code === 4902 || /unrecognized chain/i.test(String(e.message)))) await rpc("wallet_addEthereumChain", [CHAIN_42]);
+      else throw e;
+    }
+  });
+  $("reload").onclick = () => actS(async () => {});
+  $("caw").value = TEST_CAW.address;
+  if (eth && eth.on) { eth.on("accountsChanged", () => location.reload()); eth.on("chainChanged", () => location.reload()); }
+
+  // ---------------- rehearsal mint ----------------
+  let design = null;
+  function showDesign(s) {
+    design = E.normalize(s);
+    const b = E.build(design);
+    $("pv").innerHTML = E.toSVG(E.render(b.recipe));
+    $("pvInfo").textContent = "DNA " + E.encode(design) + "\n" + b.attrs.map(([k, v]) => k + ": " + v).join(" / ");
+  }
+  $("random").onclick = () => showDesign(E.randomize(Math.random));
+  $("preview").onclick = () => { const v = $("dna").value.trim(); try { if (!/^0x[0-9a-fA-F]{64}$/.test(v)) throw 0; showDesign(E.decode(v)); } catch { say("DNA が正しくありません。", "ng"); } };
+  $("checkCaw").onclick = () => act(async () => {
+    const id = BigInt($("cawId").value || "0"), caw = st.cawNames && st.cawSet ? st.cawNames : $("caw").value.trim();
+    const owner = decAddr(await view(caw, call("ownerOf(uint256)", ["uint256"], [id])));
+    let name = ""; try { name = decString(await view(caw, call("nameOf(uint256)", ["uint256"], [id]))); } catch {}
+    const used = st.aOk ? decUint(await view(st.A, call("avatarOfCaw(uint256)", ["uint256"], [id]))) : 0n;
+    say("CAW NAME を確かめました。", "ok");
+    $("cawInfo").textContent = `#${id} ${name ? "「" + name + "」" : ""} 持ち主 ${owner}${same(owner, account) ? "（このウォレット）" : "（このウォレットではありません）"}${used ? ` ・使用済み（アバター #${used}）` : ""}`;
+  });
+  $("mint").onclick = () => act(async () => {
+    if (!st.cawSet) throw new Error("先に CAW NAME を設定してください。");
+    if (!design) showDesign(E.randomize(Math.random));
+    if (!/^\d+$/.test($("cawId").value.trim())) throw new Error("CAW NAME の番号を入れてください。");
+    const cawId = BigInt($("cawId").value.trim());
+    let owner;
+    try { owner = decAddr(await view(st.cawNames, call("ownerOf(uint256)", ["uint256"], [cawId]))); }
+    catch { throw new Error(`CAW NAME #${cawId} はありません。`); }
+    if (!same(owner, account)) throw new Error(`CAW NAME #${cawId} の持ち主はこのウォレットではありません（${owner}）。`);
+    const used = decUint(await view(st.A, call("avatarOfCaw(uint256)", ["uint256"], [cawId])));
+    if (used) throw new Error(`CAW NAME #${cawId} はもう使われています（アバター #${used}）。1つの CAW NAME でミントできるのは1回だけです。`);
+    const recBytes = O.tokenRecord(PT, STRS, design).bytes;
+    const recHex = "0x" + toHex(recBytes);
+    const look = O.lookHashOfGrid(E.render(E.build(design).recipe));
+    if (decUint(await view(st.A, call("lookTaken(bytes32)", ["bytes32"], [look]))) !== 0n) throw new Error("このデザインはミント済みです。別のデザインにしてください。");
+    if (!same(st.signer, account)) throw new Error(`署名者（${st.signer}）のウォレットで署名する必要があります。予行演習では、署名者と CAW NAME の持ち主を同じウォレットにしてください。`);
+    const deadline = Math.floor(Date.now() / 1000) + 3600;
+    const typed = { types: { EIP712Domain: [{ name: "name", type: "string" }, { name: "version", type: "string" }, { name: "chainId", type: "uint256" }, { name: "verifyingContract", type: "address" }],
+      Mint: [{ name: "to", type: "address" }, { name: "cawId", type: "uint256" }, { name: "recordHash", type: "bytes32" }, { name: "deadline", type: "uint256" }] },
+      primaryType: "Mint", domain: { name: "IIDPunksAvatars", version: "1", chainId: 421018, verifyingContract: st.A },
+      message: { to: account, cawId: cawId.toString(), recordHash: keccak256(recBytes), deadline: String(deadline) } };
+    say("ミントの署名：MetaMask で署名してください（送信ではありません）…", "busy");
+    const sig = await rpc("eth_signTypedData_v4", [account, JSON.stringify(typed)]);
+    const r = await send({ to: st.A, data: call("mint(uint256,bytes,uint256,bytes)", ["uint256", "bytes", "uint256", "bytes"], [cawId, recHex, deadline, sig]) }, "ミント");
+    const T = keccak256("Transfer(address,address,uint256)");
+    const lg = r.logs.find(l => same(l.address, st.A) && l.topics[0] === T);
+    if (lg) { $("avatarId").value = BigInt(lg.topics[3]).toString(); }
+    say(`ミントしました。アバター #${$("avatarId").value}`, "ok");
+  });
+  $("claim").onclick = () => act(async () => {
+    await send({ to: st.I, data: call("claimLaunch(uint256)", ["uint256"], [BigInt($("avatarId").value || "0")]) }, "ローンチ記念を受け取る");
+    await drawItems();
+    say("ローンチ記念を受け取りました。付けたいアイテムにチェックを入れてください。", "ok");
+  });
+  async function drawItems() {
+    const el = $("items"); el.innerHTML = "";
+    for (const it of ITEM_DATA) {
+      let bal = 0n; try { bal = decUint(await view(st.I, call("balanceOf(address,uint256)", ["address", "uint256"], [account, it.id]))); } catch {}
+      el.insertAdjacentHTML("beforeend", `<label><input type="checkbox" data-id="${it.id}" ${bal ? "" : "disabled"}> ${it.ja}（${it.slot}・持っている数 ${bal}）</label>`);
+    }
+  }
+  $("equip").onclick = () => act(async () => {
+    const id = BigInt($("avatarId").value || "0");
+    for (const cb of document.querySelectorAll("#items input:checked")) {
+      await send({ to: st.A, data: call("equip(uint256,uint256)", ["uint256", "uint256"], [id, BigInt(cb.dataset.id)]) }, "付ける: アイテム " + cb.dataset.id);
+    }
+    await drawItems();
+    say("付けました。「チェーンから絵を読み出す」で確かめられます。", "ok");
+  });
+  $("read").onclick = () => act(async () => {
+    const id = BigInt($("avatarId").value || "0");
+    const uri = decString(await view(st.A, call("tokenURI(uint256)", ["uint256"], [id])));
+    const meta = JSON.parse(atob(uri.split(",")[1]));
+    $("chainPic").innerHTML = `<img alt="" src="${meta.image}">`;
+    $("chainInfo").textContent = meta.name + "\n" + meta.attributes.map(a => a.trait_type + ": " + a.value).join(" / ");
+    say("チェーンから読み出しました（tokenURI）。", "ok");
+  });
+  $("copyLog").onclick = async () => { try { await navigator.clipboard.writeText($("log").value); say("記録をコピーしました。", "ok"); } catch { $("log").select(); } };
+
+  drawSteps();
+  window.__placement = { state: () => st };
+}
+</script>
+</body>
+</html>

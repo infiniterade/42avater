@@ -26,6 +26,7 @@
 | `src/IIDPunksAvatars.sol` | Renderer・Items・Avatars の3つのコントラクト |
 | `test/Avatars.t.sol` | Foundry のテスト（コントラクトの出力がエンジンと一致するか、ミント、アイテム） |
 | `script/` | デプロイ（`Deploy`）、ローンチ後の設定（`SetupLaunch`）、予行演習（`RehearseMint`） |
+| `placement/` | ブラウザ＋MetaMask の配置ページ（デプロイ・ローンチ後の設定・予行演習ミント） |
 | `data/` | `setData` と `addItem` に渡すデータ、テストの正解データ（`tools/make_data.js` が作る） |
 | `tools/` | 描画エンジン（JS）。メーカーとコントラクトの共通の基準。`parts.json` がパーツ表 |
 | `tools/pipeline/` | パーツ表 `parts.json` を IID Punks の生成パイプライン（v27、別管理）から書き出すスクリプトと、メーカー専用の追加パーツ |
@@ -75,6 +76,11 @@ AVATAR_SIGNER=<署名サーバーのアドレス> \
 AVATARS=<IIDPunksAvatars> ITEMS=<IIDPunksItems> CAW_NAMES=<CawNamesV2> LAUNCH_DAYS=30 \
   forge script script/SetupLaunch.s.sol --rpc-url https://evm-rpc.infinitedrive.xyz --broadcast --account deployer
 ```
+
+**ブラウザ＋MetaMask で配置する場合**（42GRAM の配置ページと同じ考え方）：`node placement/build.js`（先に `forge build`）で
+`placement/dist/avatars-placement.html` を作り、ブラウザで開きます。ページは鍵を持たず、1つずつ MetaMask で承認します。
+チェーン ID と最初のブロックが 42 Chain と一致するか、テスト用 CAW NFT のコードが 42GRAM の記録と同じかを確かめ、
+送る前に毎回 eth_call で試算して失敗する内容は送りません。「済み」はいつもチェーンから読み直します。
 
 `script/RehearseMint.s.sol` は予行演習用です（署名サーバーの代わりにテスト用の鍵で署名し、ミント・受け取り・装着まで行う）。
 
