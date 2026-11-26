@@ -25,6 +25,7 @@
 | --- | --- |
 | `src/IIDPunksAvatars.sol` | Renderer・Items・Avatars の3つのコントラクト |
 | `test/Avatars.t.sol` | Foundry のテスト（コントラクトの出力がエンジンと一致するか、ミント、アイテム） |
+| `script/` | デプロイ（`Deploy`）、ローンチ後の設定（`SetupLaunch`）、予行演習（`RehearseMint`） |
 | `data/` | `setData` と `addItem` に渡すデータ、テストの正解データ（`tools/make_data.js` が作る） |
 | `tools/` | 描画エンジン（JS）。メーカーとコントラクトの共通の基準。`parts.json` がパーツ表 |
 | `tools/pipeline/` | パーツ表 `parts.json` を IID Punks の生成パイプライン（v27、別管理）から書き出すスクリプトと、メーカー専用の追加パーツ |
@@ -59,17 +60,46 @@ node maker/build.js               # メーカーのページ
 | アイテムを付ける | 約 6万 |
 | `tokenURI`（背景あり） | 約 690万 |
 
-## デプロイの順番
+## デプロイ
 
-1. `IIDPunksRenderer` → `setData(data/parts.bin, data/strings.bin)`（1回だけ）
-2. `IIDPunksItems(renderer)` → `data/items.json` の順に `addItem`
-3. `IIDPunksAvatars(renderer, items, 署名者, 価格 0, 上限)` → `items.setAvatars(avatars)`
-4. CAW NFT のローンチ後：`avatars.setCawNames(CawNamesV2 のアドレス)`、`items.setLaunch(ids, 終了時刻)`
-5. メーカーの `CHAIN = { rpc, avatars }` を設定（ミント済みの確認に使います）
+スクリプトは `script/` にあります。鍵は Foundry のキーストアに入れて使います（`cast wallet import deployer --interactive`。
+秘密鍵をコマンドやファイルに直接書かないでください）。
+
+```sh
+cd avatars
+# 1) 今すぐできる：3つのコントラクト、パーツ書き込み（1回だけ）、特別アイテム11種の登録
+AVATAR_SIGNER=<署名サーバーのアドレス> \
+  forge script script/Deploy.s.sol --rpc-url https://evm-rpc.infinitedrive.xyz --broadcast --account deployer
+
+# 2) CAW NFT のローンチ後：CAW NAME の設定（1回だけ・変更不可）と、ローンチ記念の開始
+AVATARS=<IIDPunksAvatars> ITEMS=<IIDPunksItems> CAW_NAMES=<CawNamesV2> LAUNCH_DAYS=30 \
+  forge script script/SetupLaunch.s.sol --rpc-url https://evm-rpc.infinitedrive.xyz --broadcast --account deployer
+```
+
+`script/RehearseMint.s.sol` は予行演習用です（署名サーバーの代わりにテスト用の鍵で署名し、ミント・受け取り・装着まで行う）。
+
+### 予行演習の記録（2026-11-26、ローカルの Anvil：チェーン ID 421018・ガス上限 3,000万・cancun）
+
+| 取引 | ガス |
+| --- | --- |
+| IIDPunksRenderer を置く | 2,593,290 |
+| setData（パーツ書き込み） | 4,647,546 |
+| IIDPunksItems を置く | 2,255,201 |
+| IIDPunksAvatars を置く | 2,400,727 |
+| setAvatars | 46,235 |
+| addItem ×11 | 136,017〜240,182（計 約181万） |
+| **デプロイ合計（16取引）** | **13,755,361** |
+| mint | 1,796,098 |
+| claimLaunch（11種） | 618,354 |
+| equip | 87,419 |
+| tokenURI（eth_call、アイテム4つ） | 約 684万 |
+
+- CAW NAME の設定前のミントは `CAW NAME not set yet` で拒否、同じ CAW NAME の2回目は `CAW NAME already used` で拒否
+- `tokenURI` を読み出して base64 を戻した SVG が、エンジン（メーカー）の SVG と一致
 
 ## まだのこと
 
 - 第三者の監査
 - 署名サーバー（デザインのルールを確かめて EIP-712 で署名）と、ウォレットをつないでミント・アイテムの付け外しをする画面
-- 42 Chain（テスト）での通し確認：テスト用 CAW NFT `0xa67874FFAD0b8a0c1E587e1357fD03494518176D`
+- 42 Chain 上での通し確認（`Deploy.s.sol` → テスト用 CAW NFT `0xa67874FFAD0b8a0c1E587e1357fD03494518176D` で `SetupLaunch.s.sol` → メーカーからミント）
 - パーツの絵のライセンス（IID Punks の図案を MIT にするか、CAW のロゴと同じく対象外にするか）
