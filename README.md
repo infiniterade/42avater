@@ -44,6 +44,19 @@
 
 ミントは、メーカー → 本人確認の署名（MetaMask、無料）→ 署名サーバー（`signer/`。デザインのルール・CAW NAME・見た目を確かめて署名し、見た目を15分予約）→ `mint()` の順に進みます。署名サーバーの置き方は [`signer/README.md`](signer/README.md)。`maker/_headers`（ビルドで `maker/dist/_headers` に書き出す）で、ほかのサイトの枠の中に表示されないようにし（ウォレットを使うページのクリックの乗っ取り対策）、ページが通信できる先を RPC と署名サーバーだけに絞っています（CSP）。
 
+## テスト環境
+
+本番とは別に、42 Chain のテスト用コントラクトとテスト用の CAW NAME で試せる環境があります。
+
+| | 本番 | テスト |
+| --- | --- | --- |
+| ページ | https://42avater.pages.dev（Pages の Production） | https://test.42avater.pages.dev（同じ Pages プロジェクトの Preview。`test` ブランチ） |
+| 署名サーバー | `42avater-signer`（`signer/wrangler.toml`） | `42avater-signer-test`（`signer/wrangler.test.toml`） |
+| コントラクト | これから置く | `deployments/42chain-test-2026-11-28.json` |
+| 署名者 | 本番用のアカウント | テスト専用のアカウント（残高なし） |
+
+Pages の環境変数は Production と Preview で別々に入れます。Preview にはテスト用の値が入っているので、プルリクエストのプレビューもテスト環境につながります。`test` ブランチは `main` と同じ中身に保ちます（`main` を更新したら `test` にも送る）。
+
 ## フォント
 
 ページは外部のサイトから何も読み込みません（Google Fonts を使わない）。DotGothic16 と Noto Sans JP（どちらも SIL Open Font License 1.1、`maker/fonts/OFL-*.txt`）を、ページで使う文字だけに絞って `maker/fonts/` に置き、ビルドのときページに埋め込みます。

@@ -64,7 +64,8 @@
     <div class="row"><label>IIDPunksAvatars <input class="addr" id="aAvatars" placeholder="0x…"></label></div>
     <div class="row"><label>署名者（ミントの署名をするアドレス。予行演習ではこのウォレット） <input class="addr" id="signer" placeholder="0x…"></label></div>
     <div class="row"><label>アバターの上限 <input id="maxSupply" value="1000000" size="10"></label>
-      <button id="reload">チェーンから読み直す</button></div>
+      <button id="reload">チェーンから読み直す</button>
+      <button id="fresh">新しく置き直す</button></div>
     <div id="steps"></div>
   </section>
 
@@ -349,6 +350,14 @@
     }
   });
   $("reload").onclick = () => actS(async () => {});
+  // start a new set of contracts: forget the remembered addresses and log (the old contracts stay on the chain)
+  $("fresh").onclick = () => {
+    if (!confirm("覚えている3つのアドレスと記録を消して、新しく置き直します。\n前のコントラクトはチェーンに残ります（記録が必要なら、先に下の記録をコピーしてください）。よろしいですか？")) return;
+    rec = { txs: [] };
+    for (const id of ["aRenderer", "aItems", "aAvatars"]) $(id).value = "";
+    save();
+    actS(async () => {});
+  };
   $("caw").value = TEST_CAW.address;
   if (eth && eth.on) { eth.on("accountsChanged", () => location.reload()); eth.on("chainChanged", () => location.reload()); }
 
