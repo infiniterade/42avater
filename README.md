@@ -33,9 +33,10 @@
 | Cloudflare Pages の設定 | 値 |
 | --- | --- |
 | リポジトリ | `infiniterade/42gram` |
-| 本番のブランチ | `main`（PR がマージされるまでは `avatars` をプレビューで） |
-| ビルドのコマンド | `node avatars/maker/build.js` |
-| 出力のフォルダー | `avatars/maker/dist` |
+| 本番のブランチ | いまは `avatars`（PR #1 をマージしたら `main` に変える） |
+| ルートのフォルダー | `avatars`（リポジトリ直下の npm の依存を入れないため） |
+| ビルドのコマンド | `node maker/build.js` |
+| 出力のフォルダー | `maker/dist` |
 | 環境変数（本番のコントラクトを置いたあと） | `MAKER_CHAIN_RPC` = `https://evm-rpc.infinitedrive.xyz`、`MAKER_CHAIN_AVATARS` = アバターのコントラクトのアドレス |
 
 環境変数がないあいだは「マイアバター」が「コントラクト公開後に使えます」と表示されます。`maker/_headers` で、ほかのサイトの枠の中に表示されないようにしています（ウォレットを使うページのクリックの乗っ取り対策）。
