@@ -511,8 +511,9 @@ contract IIDPunksItems is ERC1155, Ownable2Step {
 }
 
 /// The avatar NFT. The record written at mint is never changed. Special items are equipped on top.
-/// No admin after setup: minting is free forever, the signer is fixed at deploy, and setCawNames() (the only
-/// owner action) gives up ownership in the same call. Nobody can change minted avatars or how they are drawn.
+/// No admin after setup: minting is free forever, and setCawNames() (the only owner action) gives up ownership in the
+/// same call. The signer can only hand its role to a new key or close minting for good; nobody can change minted
+/// avatars or how they are drawn.
 contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
     event Equipped(uint256 indexed tokenId, uint8 indexed slot, uint256 itemId);
 
@@ -525,7 +526,8 @@ contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
     event CawNamesSet(address cawNames);
     mapping(uint256 => uint256) public avatarOfCaw;      // CAW NAME tokenId => avatar id (0 = not used yet)
     mapping(uint256 => uint256) public cawOfAvatar;      // avatar id => CAW NAME tokenId it was minted with
-    address public immutable signer;   // the maker backend that checks the design rules at mint (fixed forever)
+    address public signer;          // the maker backend that checks the design rules at mint
+    bool public mintingClosed;      // set once by the signer; minting never opens again
     uint256 public immutable maxSupply;
     uint256 private _lastId;                             // ids count up from 1 (totalSupply() comes from ERC721Enumerable)
     string public constant NAME = "42gAvaterMaker";
@@ -540,6 +542,8 @@ contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
         keccak256("Mint(address to,uint256 cawId,bytes32 recordHash,uint256 deadline)");
 
     event MintedWithCaw(uint256 indexed avatarId, uint256 indexed cawId, address indexed to);
+    event SignerChanged(address indexed previousSigner, address indexed newSigner);
+    event MintingClosed(address indexed bySigner);
 
     constructor(IIDPunksRenderer r, IIDPunksItems it, address signer_, uint256 maxSupply_)
         ERC721("42gAvaterMaker", "42AM") Ownable(msg.sender) EIP712("IIDPunksAvatars", "1")
@@ -562,12 +566,32 @@ contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
         _transferOwnership(address(0));
     }
 
+    /// The current signer hands its role to a new key (key move or suspected leak). Signatures made with the old key
+    /// stop working at once. Only the signer itself can do this; there is no admin who can.
+    function setSigner(address next) external {
+        require(msg.sender == signer, "only signer");
+        require(next != address(0), "signer");
+        emit SignerChanged(signer, next);
+        signer = next;
+    }
+
+    /// The signer closes minting for good. This cannot be undone: no new avatars, ever. Existing avatars and
+    /// special items keep working as before.
+    function closeMinting() external {
+        require(msg.sender == signer, "only signer");
+        mintingClosed = true;
+        emit SignerChanged(signer, address(0));
+        signer = address(0);
+        emit MintingClosed(msg.sender);
+    }
+
     /// One avatar per CAW NAME. The caller must own the CAW NAME; each CAW NAME can be used only once, forever
     /// (selling the CAW NAME afterwards does not give the new owner another avatar).
     function mint(uint256 cawId, bytes calldata record, uint256 deadline, bytes calldata sig)
         external returns (uint256 id)
     {
         require(cawConfigured, "CAW NAME not set yet");
+        require(!mintingClosed, "minting closed");
         require(block.timestamp <= deadline, "expired");
         require(totalSupply() < maxSupply, "sold out");
         require(avatarOfCaw[cawId] == 0, "CAW NAME already used");

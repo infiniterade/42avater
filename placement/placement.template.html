@@ -385,6 +385,7 @@
     const recHex = "0x" + toHex(recBytes);
     const look = O.lookHashOfGrid(E.render(E.build(design).recipe));
     if (decUint(await view(st.A, call("lookTaken(bytes32)", ["bytes32"], [look]))) !== 0n) throw new Error("このデザインはミント済みです。別のデザインにしてください。");
+    if (/^0x0{40}$/i.test(st.signer || "")) throw new Error("ミントは署名者によって締め切られています（もう再開できません）。");
     if (!same(st.signer, account)) throw new Error(`署名者（${st.signer}）のウォレットで署名する必要があります。予行演習では、署名者と CAW NAME の持ち主を同じウォレットにしてください。`);
     const deadline = Math.floor(Date.now() / 1000) + 3600;
     const typed = { types: { EIP712Domain: [{ name: "name", type: "string" }, { name: "version", type: "string" }, { name: "chainId", type: "uint256" }, { name: "verifyingContract", type: "address" }],

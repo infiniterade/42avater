@@ -61,15 +61,21 @@ contract AvatarsTest is Test {
         for (uint256 s = 0; s < SLOTS; s++) nm[s] = vm.parseJsonString(vec, _c(i, string.concat("names[", vm.toString(s), "]")));
     }
 
-    function _sig(address to, uint256 cawId, bytes memory rec, uint256 deadline, IIDPunksAvatars a)
-        internal view returns (bytes memory)
+    function _digest(address to, uint256 cawId, bytes memory rec, uint256 deadline, IIDPunksAvatars a)
+        internal view returns (bytes32)
     {
         bytes32 structHash = keccak256(abi.encode(
             keccak256("Mint(address to,uint256 cawId,bytes32 recordHash,uint256 deadline)"), to, cawId, keccak256(rec), deadline));
         bytes32 domain = keccak256(abi.encode(
             keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
             keccak256("IIDPunksAvatars"), keccak256("1"), block.chainid, address(a)));
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(SIGNER_PK, keccak256(abi.encodePacked("\x19\x01", domain, structHash)));
+        return keccak256(abi.encodePacked("\x19\x01", domain, structHash));
+    }
+
+    function _sig(address to, uint256 cawId, bytes memory rec, uint256 deadline, IIDPunksAvatars a)
+        internal view returns (bytes memory)
+    {
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(SIGNER_PK, _digest(to, cawId, rec, deadline, a));
         return abi.encodePacked(r, s, v);
     }
 
@@ -341,6 +347,67 @@ contract AvatarsTest is Test {
         vm.prank(bob);
         items.acceptOwnership();
         assertEq(items.owner(), bob);
+    }
+
+    /// The signer hands its role to a new key: old signatures stop working, only the signer can do it.
+    function test_SignerRotation() public {
+        uint256 newPk = 0xB0B5;
+        address newSigner = vm.addr(newPk);
+        caw.mintTo(alice, 7);
+        uint256 dl = block.timestamp + 1 hours;
+        bytes memory oldSig = _sig(alice, 7, _rec(0), dl, avatars);
+        vm.prank(alice);
+        vm.expectRevert(bytes("only signer"));
+        avatars.setSigner(alice);
+        vm.expectRevert(bytes("only signer"));                // not even the deployer
+        avatars.setSigner(newSigner);
+        vm.prank(signer);
+        vm.expectRevert(bytes("signer"));
+        avatars.setSigner(address(0));
+        vm.prank(signer);
+        avatars.setSigner(newSigner);
+        assertEq(avatars.signer(), newSigner);
+        vm.prank(alice);
+        vm.expectRevert(bytes("bad signature"));               // made with the old key
+        avatars.mint(7, _rec(0), dl, oldSig);
+        bytes32 digest = _digest(alice, 7, _rec(0), dl, avatars);
+        (uint8 v, bytes32 r, bytes32 s_) = vm.sign(newPk, digest);
+        vm.prank(alice);
+        avatars.mint(7, _rec(0), dl, abi.encodePacked(r, s_, v));
+        assertEq(avatars.ownerOf(1), alice);
+        vm.prank(signer);
+        vm.expectRevert(bytes("only signer"));                // the old signer has no power left
+        avatars.setSigner(signer);
+    }
+
+    /// The signer closes minting for good; existing avatars and items keep working.
+    function test_CloseMinting() public {
+        _launch();
+        uint256 a = _mint(alice, 7, 0);
+        vm.prank(alice);
+        vm.expectRevert(bytes("only signer"));
+        avatars.closeMinting();
+        caw.mintTo(alice, 8);
+        uint256 dl = block.timestamp + 1 hours;
+        bytes memory sig = _sig(alice, 8, _rec(1), dl, avatars);
+        vm.prank(signer);
+        avatars.closeMinting();
+        assertTrue(avatars.mintingClosed());
+        assertEq(avatars.signer(), address(0));
+        vm.prank(alice);
+        vm.expectRevert(bytes("minting closed"));
+        avatars.mint(8, _rec(1), dl, sig);
+        vm.prank(signer);
+        vm.expectRevert(bytes("only signer"));                // nobody can reopen it
+        avatars.setSigner(signer);
+        // existing avatars still work
+        vm.startPrank(alice);
+        items.claimLaunch(a, 7);
+        avatars.equip(a, 7);
+        avatars.transferFrom(alice, bob, a);
+        vm.stopPrank();
+        assertEq(avatars.ownerOf(a), bob);
+        assertGt(bytes(avatars.tokenURI(a)).length, 1000);
     }
 
     function test_SetCawNames_refusesZeroAndNonContract() public {
