@@ -1,0 +1,53 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Avatar contracts, engine and data
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository and pinned dependencies
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@dba66c27052e63476d886f22216e119ba7e615bf # v1
+        with:
+          version: v1.8.7
+
+      - name: Install Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+
+      - name: data/ matches what the engine produces
+        run: node tools/make_data.js --check
+
+      - name: Engine checks (keccak, byte renderer, special items)
+        run: |
+          node tools/test_keccak.js
+          node tools/test_onchain.js
+          node tools/test_items.js
+
+      - name: Build contracts
+        run: forge build --sizes
+
+      - name: Run contract tests (contract output == engine output, mint, items)
+        run: forge test -vvv
+
+      - name: Build the maker page
+        run: node maker/build.js

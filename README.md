@@ -1,5 +1,7 @@
 # 42gAvaterMaker（42GRAM のアバター）
 
+42GRAM（`infiniterade/42gram`）とは別のリポジトリです。42GRAM はチェーン上のコントラクトからアバターを読むだけで、コードは共有していません。
+
 42GRAM のアバター NFT です。IID Punks のドット絵のパーツから選んで作り、**CAW NAME 1つにつき1体**、無料でミントできます。
 絵はチェーン上に置いたパーツから、表示のたびにコントラクトが SVG に組み立てます。
 
@@ -32,9 +34,8 @@
 
 | Cloudflare Pages の設定 | 値 |
 | --- | --- |
-| リポジトリ | `infiniterade/42gram` |
-| 本番のブランチ | いまは `avatars`（PR #1 をマージしたら `main` に変える） |
-| ルートのフォルダー | `avatars`（リポジトリ直下の npm の依存を入れないため） |
+| リポジトリ | `infiniterade/42avater` |
+| 本番のブランチ | `main` |
 | ビルドのコマンド | `node maker/build.js` |
 | 出力のフォルダー | `maker/dist` |
 | 環境変数（本番のコントラクトを置いたあと） | `MAKER_CHAIN_RPC` = `https://evm-rpc.infinitedrive.xyz`、`MAKER_CHAIN_AVATARS` = アバターのコントラクトのアドレス |
@@ -69,10 +70,9 @@
 
 ## 確かめる
 
-必要なもの：Node.js 22 以上、[Foundry](https://getfoundry.sh/)。`lib/` はリポジトリのものを使います（`git submodule update --init`）。
+必要なもの：Node.js 22 以上、[Foundry](https://getfoundry.sh/)。依存（forge-std、OpenZeppelin）は `lib/` のサブモジュールです（`git clone --recurse-submodules`、または `git submodule update --init`）。
 
 ```sh
-cd avatars
 node tools/make_data.js --check   # data/ がエンジンの出力と同じか
 node tools/test_keccak.js         # lookHash に使う keccak256
 node tools/test_onchain.js        # コントラクトと同じ手順の描画 == エンジン（2万体）
@@ -103,7 +103,6 @@ node maker/build.js --chain chain.json --out x.html   # {"rpc":"https://…","av
 秘密鍵をコマンドやファイルに直接書かないでください）。
 
 ```sh
-cd avatars
 # 1) 今すぐできる：3つのコントラクト、パーツ書き込み（1回だけ）、特別アイテム11種の登録
 AVATAR_SIGNER=<署名サーバーのアドレス> \
   forge script script/Deploy.s.sol --rpc-url https://evm-rpc.infinitedrive.xyz --broadcast --account deployer
