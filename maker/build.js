@@ -20,6 +20,12 @@ if (arg("--chain") || envChain) {
   if (!/^https:\/\/|^http:\/\/(127\.0\.0\.1|localhost)[:/]/.test(c.rpc) || !/^0x[0-9a-fA-F]{40}$/.test(c.avatars)) throw new Error("bad chain settings");
   rep('{ rpc: "", avatars: "" }', JSON.stringify({ rpc: c.rpc, avatars: c.avatars }));
 }
+// Test hooks (window.__makerTest: point the page at a local chain) exist only in --test builds.
+if (!process.argv.includes("--test")) {
+  rep("window.__makerTest?.chain || ", "");
+  rep("window.__makerTest?.genesis || ", "");
+  if (h.includes("__makerTest")) throw new Error("test hook left in the page");
+}
 const out = arg("--out") || path.join(__dirname, "dist", "index.html");
 fs.mkdirSync(path.dirname(out), { recursive: true });
 fs.writeFileSync(out, h);

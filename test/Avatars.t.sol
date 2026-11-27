@@ -544,6 +544,51 @@ contract AvatarsTest is Test {
         items.addItem(hex"0503" hex"00FF0000" hex"0000FF00" hex"000000FF", "bad", 0, 0);
     }
 
+    /// Random equip / unequip / transfer sequences: the avatar contract always holds exactly the items that are worn,
+    /// and every item is either in a wallet or worn (never lost or duplicated).
+    function testFuzz_CustodyMatchesEquipped(uint256 seed) public {
+        _giveAll(alice);
+        _giveAll(bob);
+        uint256 a = _mint(alice, 7, 0);
+        caw.mintTo(bob, 8);
+        uint256 b = _mint(bob, 8, 1);
+        address[2] memory who = [alice, bob];
+        for (uint256 step = 0; step < 24; step++) {
+            uint256 r = uint256(keccak256(abi.encode(seed, step)));
+            uint256 tok = r % 2 == 0 ? a : b;
+            address own = avatars.ownerOf(tok);
+            uint256 op = (r >> 8) % 3;
+            if (op == 0) {
+                uint256 it = ((r >> 16) % ITEMS) + 1;
+                if (items.balanceOf(own, it) > 0 && avatars.equippedOf(tok)[items.slotOf(it)] != it) {
+                    vm.prank(own);
+                    avatars.equip(tok, it);
+                }
+            } else if (op == 1) {
+                uint8 sl = uint8((r >> 16) % 6);
+                if (avatars.equippedOf(tok)[sl] != 0) {
+                    vm.prank(own);
+                    avatars.unequip(tok, sl);
+                }
+            } else {
+                address to = who[(r >> 16) % 2];
+                vm.prank(own);
+                avatars.transferFrom(own, to, tok);
+            }
+            for (uint256 it = 1; it <= ITEMS; it++) {
+                uint256 worn;
+                uint256[6] memory ea = avatars.equippedOf(a);
+                uint256[6] memory eb = avatars.equippedOf(b);
+                for (uint256 sl = 0; sl < 6; sl++) {
+                    if (ea[sl] == it) worn++;
+                    if (eb[sl] == it) worn++;
+                }
+                assertEq(items.balanceOf(address(avatars), it), worn, "custody");
+                assertEq(items.balanceOf(alice, it) + items.balanceOf(bob, it) + worn, 2, "conservation");
+            }
+        }
+    }
+
     /// Worst-case picture: a checkerboard background (576 one-pixel rects). The SVG must still fit.
     function test_WorstCaseSvgFits() public {
         bytes memory it = abi.encodePacked(hex"0402", hex"00FF0000", hex"000000FF");

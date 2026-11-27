@@ -80,7 +80,8 @@ node tools/test_items.js          # 特別アイテムを付けても一致・�
 forge build --sizes
 forge test -vvv                   # 22件
 node maker/build.js               # メーカーのページ（チェーン設定は空＝「コントラクト公開後に使えます」）
-node maker/build.js --chain chain.json --out x.html   # {"rpc":"https://…","avatars":"0x…"} を入れて作る
+node maker/build.js --chain chain.json --out x.html
+node maker/build.js --test        # 手元のチェーンで通しテストをするとき（テスト用の入口を残す）   # {"rpc":"https://…","avatars":"0x…"} を入れて作る
 ```
 
 パーツやアイテムを変えたら `node tools/make_data.js` で `data/` を作り直してください（CI は `--check` で確かめます）。
