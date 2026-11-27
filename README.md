@@ -37,7 +37,7 @@
 | `data/` | `setData` と `addItem` に渡すデータ、テストの正解データ（`tools/make_data.js` が作る） |
 | `tools/` | 描画エンジン（JS）。メーカーとコントラクトの共通の基準。`parts.json` がパーツ表 |
 | `tools/pipeline/` | パーツ表 `parts.json` を IID Punks の生成パイプライン（v27、別管理）から書き出すスクリプトと、メーカー専用の追加パーツ |
-| `maker/` | アバターメーカーのページ（`node maker/build.js` で `maker/dist/index.html` を作る） |
+| `maker/` | アバターメーカーのページ（`node maker/build.js` で `maker/dist/index.html` を作る）。「マイアバター」で、持っているアバターの一覧・試着・特別アイテムの付け外し・ローンチ記念の受け取りができる |
 
 ## 確かめる
 
@@ -51,7 +51,8 @@ node tools/test_onchain.js        # コントラクトと同じ手順の描画 =
 node tools/test_items.js          # 特別アイテムを付けても一致・記録は不変
 forge build --sizes
 forge test -vvv                   # 22件
-node maker/build.js               # メーカーのページ
+node maker/build.js               # メーカーのページ（チェーン設定は空＝「コントラクト公開後に使えます」）
+node maker/build.js --chain chain.json --out x.html   # {"rpc":"https://…","avatars":"0x…"} を入れて作る
 ```
 
 パーツやアイテムを変えたら `node tools/make_data.js` で `data/` を作り直してください（CI は `--check` で確かめます）。
