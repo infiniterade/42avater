@@ -451,11 +451,11 @@
   $("avatarId").addEventListener("change", () => { if (st.aOk) drawItems().catch(() => {}); });
   $("read").onclick = () => act(async () => {
     const id = BigInt($("avatarId").value || "0");
-    const uri = decString(await view(st.A, call("tokenURI(uint256)", ["uint256"], [id])));
+    const uri = decString(await view(st.A, call("dressedTokenURI(uint256)", ["uint256"], [id])));
     const meta = JSON.parse(atob(uri.split(",")[1]));
     $("chainPic").innerHTML = `<img alt="" src="${meta.image}">`;
     $("chainInfo").textContent = meta.name + "\n" + meta.attributes.map(a => a.trait_type + ": " + a.value).join(" / ");
-    say("チェーンから読み出しました（tokenURI）。", "ok");
+    say("チェーンから読み出しました（dressedTokenURI＝アイテムを付けた姿。マーケットに出る tokenURI はアイテムなし）。", "ok");
   });
   $("copyLog").onclick = async () => { try { await navigator.clipboard.writeText($("log").value); say("記録をコピーしました。", "ok"); } catch { $("log").select(); } };
 

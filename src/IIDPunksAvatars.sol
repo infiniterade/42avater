@@ -500,8 +500,6 @@ contract IIDPunksItems is ERC1155, Ownable {
 
 /// The avatar NFT. The record written at mint is never changed. Special items are equipped on top.
 contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
-    /// ERC-4906: tells marketplaces to refresh the picture after equipping / unequipping
-    event MetadataUpdate(uint256 _tokenId);
     event Equipped(uint256 indexed tokenId, uint8 indexed slot, uint256 itemId);
 
     IIDPunksRenderer public immutable renderer;
@@ -586,7 +584,6 @@ contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
         if (old != 0) itemsContract.moveForEquip(address(this), msg.sender, old);
         _equipped[tokenId][slot] = itemId;
         emit Equipped(tokenId, slot, itemId);
-        emit MetadataUpdate(tokenId);
     }
 
     /// Take an item off. It goes back to the avatar's current owner.
@@ -597,7 +594,6 @@ contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
         _equipped[tokenId][slot] = 0;
         itemsContract.moveForEquip(address(this), msg.sender, old);
         emit Equipped(tokenId, slot, 0);
-        emit MetadataUpdate(tokenId);
     }
 
     function equippedOf(uint256 tokenId) external view returns (uint256[6] memory) { return _equipped[tokenId]; }
@@ -613,7 +609,15 @@ contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
         return _record[id];
     }
 
+    /// What marketplaces and wallets show: the minted avatar alone, never the special items.
+    /// Equipped items go back to the seller on every transfer, so this is exactly what a buyer gets.
     function tokenURI(uint256 id) public view override returns (string memory) {
+        _requireOwned(id);
+        return renderer.tokenURI(id, _record[id], new bytes[](6), new string[](6), NAME, DESCRIPTION);
+    }
+
+    /// The avatar wearing its special items (for 42GRAM and the maker).
+    function dressedTokenURI(uint256 id) external view returns (string memory) {
         _requireOwned(id);
         bytes[] memory blobs = new bytes[](6);
         string[] memory names = new string[](6);
@@ -627,8 +631,20 @@ contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
         return renderer.tokenURI(id, _record[id], blobs, names, NAME, DESCRIPTION);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view override returns (bool) {
-        return interfaceId == bytes4(0x49064906) || super.supportsInterface(interfaceId);
+    /// Items are never sold together with an avatar: on any transfer, everything it wears goes back to the
+    /// previous owner (so nobody can take items off between a sale and its settlement).
+    function _update(address to, uint256 tokenId, address auth) internal override returns (address from) {
+        from = super._update(to, tokenId, auth);
+        if (from != address(0) && to != from) {
+            for (uint8 s = 0; s < 6; s++) {
+                uint256 it = _equipped[tokenId][s];
+                if (it != 0) {
+                    _equipped[tokenId][s] = 0;
+                    itemsContract.moveForEquip(address(this), from, it);
+                    emit Equipped(tokenId, s, 0);
+                }
+            }
+        }
     }
 
     // settings that never touch minted avatars

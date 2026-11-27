@@ -167,7 +167,6 @@ contract AvatarsTest is Test {
         assertEq(b.length, 2);
         assertEq(avatars.avatarsOf(address(0xdead)).length, 0);
         assertTrue(avatars.supportsInterface(0x780e9d63)); // ERC721Enumerable
-        assertTrue(avatars.supportsInterface(0x49064906)); // ERC-4906
     }
 
     function test_TwoCawNamesTwoAvatars() public {
@@ -307,13 +306,15 @@ contract AvatarsTest is Test {
         items.claimLaunch(a);
         bytes memory rec = avatars.recordOf(a);
         string memory plain = avatars.tokenURI(a);
+        assertEq(avatars.dressedTokenURI(a), plain);
 
         vm.prank(alice);
         avatars.equip(a, 1);                                   // Wizard Hat
         assertEq(items.balanceOf(alice, 1), 0);
         assertEq(items.balanceOf(address(avatars), 1), 1);
         assertEq(avatars.equippedOf(a)[0], 1);
-        assertTrue(keccak256(bytes(avatars.tokenURI(a))) != keccak256(bytes(plain)));
+        assertTrue(keccak256(bytes(avatars.dressedTokenURI(a))) != keccak256(bytes(plain)));
+        assertEq(avatars.tokenURI(a), plain);                  // marketplaces always see the avatar alone
 
         vm.prank(alice);
         avatars.equip(a, 2);                                   // Party Hat replaces it; Wizard Hat comes back
@@ -325,7 +326,7 @@ contract AvatarsTest is Test {
         avatars.unequip(a, 0);
         assertEq(items.balanceOf(alice, 2), 1);
         assertEq(avatars.recordOf(a), rec);
-        assertEq(avatars.tokenURI(a), plain);                  // back to the minted picture
+        assertEq(avatars.dressedTokenURI(a), plain);           // back to the minted picture
 
         vm.prank(bob);
         vm.expectRevert(bytes("not owner"));
@@ -339,22 +340,33 @@ contract AvatarsTest is Test {
         avatars.equip(a, 3);
     }
 
-    function test_ItemsTravelWithAvatar() public {
+    /// Items are never sold with the avatar: a transfer sends everything it wears back to the seller.
+    function test_ItemsReturnToSellerOnTransfer() public {
         _launch();
         uint256 a = _mint(alice, 7, 0);
         vm.prank(alice);
         items.claimLaunch(a);
-        vm.prank(alice);
+        string memory plain = avatars.tokenURI(a);
+        vm.startPrank(alice);
         avatars.equip(a, 9);                                   // Sunset background
-        vm.prank(alice);
+        avatars.equip(a, 1);                                   // Wizard Hat
         avatars.transferFrom(alice, bob, a);
-        vm.prank(alice);
-        vm.expectRevert(bytes("not owner"));
-        avatars.unequip(a, 4);
+        vm.stopPrank();
+        assertEq(items.balanceOf(alice, 9), 1);
+        assertEq(items.balanceOf(alice, 1), 1);
+        assertEq(items.balanceOf(bob, 9), 0);
+        assertEq(items.balanceOf(address(avatars), 9), 0);
+        uint256[6] memory eq = avatars.equippedOf(a);
+        for (uint256 s = 0; s < 6; s++) assertEq(eq[s], 0);
+        assertEq(avatars.tokenURI(a), plain);
+        assertEq(avatars.dressedTokenURI(a), plain);           // the buyer gets exactly what the market showed
         vm.prank(bob);
+        vm.expectRevert(bytes("empty slot"));
         avatars.unequip(a, 4);
+        // the seller can put the items on another avatar or sell them on their own
+        vm.prank(alice);
+        items.safeTransferFrom(alice, bob, 9, 1, "");
         assertEq(items.balanceOf(bob, 9), 1);
-        assertEq(items.balanceOf(alice, 9), 0);
     }
 
     /// Full tokenURI with items equals the renderer fed with the engine's item blobs.
@@ -370,7 +382,8 @@ contract AvatarsTest is Test {
                 if (itemId != 0) { vm.prank(alice); avatars.equip(a, itemId); }
             }
             string memory expected = renderer.tokenURI(a, _rec(i), _items(i), _names(i), avatars.NAME(), avatars.DESCRIPTION());
-            assertEq(avatars.tokenURI(a), expected);
+            assertEq(avatars.dressedTokenURI(a), expected);
+            assertEq(avatars.tokenURI(a), renderer.tokenURI(a, _rec(i), new bytes[](SLOTS), new string[](SLOTS), avatars.NAME(), avatars.DESCRIPTION()));
             assertEq(renderer.svgOf(_rec(i), _items(i)), vm.parseJsonString(vec, _c(i, "svg")));
         }
     }
@@ -391,10 +404,10 @@ contract AvatarsTest is Test {
         its[5] = items.dataOf(11);
         string[] memory nm = new string[](SLOTS);
         nm[5] = "Rainbow Hair Dye";
-        assertEq(avatars.tokenURI(a), renderer.tokenURI(a, _rec(0), its, nm, avatars.NAME(), avatars.DESCRIPTION()));
+        assertEq(avatars.dressedTokenURI(a), renderer.tokenURI(a, _rec(0), its, nm, avatars.NAME(), avatars.DESCRIPTION()));
         vm.prank(alice);
         avatars.unequip(a, 5);
-        assertEq(avatars.tokenURI(a), plain);
+        assertEq(avatars.dressedTokenURI(a), plain);
         // the item drawn alone shows its bands
         string memory sw = renderer.itemSvg(items.dataOf(11));
         assertGt(bytes(sw).length, 100);
@@ -441,7 +454,15 @@ contract AvatarsTest is Test {
         }
         console.log("svgOf worst gas (60 cases):", worst);
         g = gasleft();
-        avatars.tokenURI(a);
-        console.log("tokenURI with background gas:", g - gasleft());
+        avatars.dressedTokenURI(a);
+        console.log("dressedTokenURI with background gas:", g - gasleft());
+        vm.startPrank(alice);
+        avatars.equip(a, 1);
+        avatars.equip(a, 4);
+        avatars.equip(a, 7);
+        g = gasleft();
+        avatars.transferFrom(alice, bob, a);
+        console.log("transfer wearing 4 items gas:", g - gasleft());
+        vm.stopPrank();
     }
 }
