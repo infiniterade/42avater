@@ -109,6 +109,27 @@ test("only designs that follow the rules", async () => {
   if (tweaked !== good) await rejects(s.sign(await req(ALICE, "7", tweaked)), "bad_design");
 });
 
+test("broken designs are refused with 400, never a server error", async () => {
+  const { s } = setup();
+  // a valid design with one slot set to every possible value: each answer is a signature or bad_design
+  const base = dnaOf(11);
+  let signed = 0;
+  for (let i = 0; i < 28; i += 3) for (let v = 0; v < 256; v += 7) {
+    const d = base.slice(0, 2 + i * 2) + v.toString(16).padStart(2, "0") + base.slice(4 + i * 2);
+    try { await s.sign(await req(ALICE, "7", d)); signed++; clock += 1000; }
+    catch (e) { assert.equal(e.code, "bad_design", "slot " + i + " value " + v + ": " + e.message); }
+  }
+  assert.ok(signed > 0);
+});
+
+test("CAW NAME ids must be canonical (no leading zeros), so one CAW NAME holds one reservation", async () => {
+  const { s } = setup();
+  await rejects(s.sign(await req(ALICE, "07", dnaOf(12))), "bad_request");
+  await rejects(s.sign(await req(ALICE, "-7", dnaOf(12))), "bad_request");
+  assert.ok((await s.sign(await req(ALICE, "7", dnaOf(12)))).signature);
+  clock += 1000;
+});
+
 test("the CAW NAME must be yours and unused; the look unminted; minting open", async () => {
   const { s, c } = setup();
   const dna = dnaOf(4);
