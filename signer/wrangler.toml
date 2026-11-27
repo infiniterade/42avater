@@ -1,0 +1,25 @@
+# 42gAvaterMaker mint signer (Cloudflare Worker + D1).
+# Before the first deploy: replace every __…__ placeholder (see README.md), then
+#   npx wrangler d1 create 42avater-signer          # copy the database_id below
+#   npx wrangler d1 execute 42avater-signer --remote --file schema.sql
+#   npx wrangler secret put SIGNER_KEY              # the signer wallet's private key; typed by you, never stored in files
+#   npx wrangler deploy
+name = "42avater-signer"
+main = "src/worker.mjs"
+compatibility_date = "2025-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "42avater-signer"
+database_id = "__D1_DATABASE_ID__"
+
+[vars]
+CHAIN_ID = "421018"
+RPC_URL = "https://evm-rpc.infinitedrive.xyz"
+# 42 Chain genesis block: the RPC must really be 42 Chain
+GENESIS = "0xcdf6d330ca32a6e9d7597c5cf220d77993793a6ea4bc0d8f723ec71f958741ea"
+AVATARS = "__AVATARS_CONTRACT_ADDRESS__"
+# pages that may call this Worker from a browser
+ALLOWED_ORIGINS = "https://42avater.pages.dev"
+# how long a signature (and the look's reservation) stays valid, in seconds
+SIGNATURE_TTL = "900"

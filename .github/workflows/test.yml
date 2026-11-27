@@ -49,5 +49,11 @@ jobs:
       - name: Run contract tests (contract output == engine output, mint, items)
         run: forge test -vvv
 
+      - name: Signing server tests (design rules, CAW NAME checks, sniping protection)
+        working-directory: signer
+        run: |
+          npm install --no-save --no-audit --no-fund ethers@6.17.0
+          node --test test/*.test.mjs
+
       - name: Build the maker page
         run: node maker/build.js --strict   # fails if the page uses a character the bundled fonts don't have
