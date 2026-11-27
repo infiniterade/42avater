@@ -420,6 +420,26 @@ contract AvatarsTest is Test {
         items.addItem(hex"0503" hex"00FF0000" hex"0000FF00" hex"000000FF", "bad", 0, 0);
     }
 
+    /// Worst-case picture: a checkerboard background (576 one-pixel rects). The SVG must still fit.
+    function test_WorstCaseSvgFits() public {
+        bytes memory it = abi.encodePacked(hex"0402", hex"00FF0000", hex"000000FF");
+        for (uint256 y = 0; y < 24; y++) {
+            for (uint256 x = 0; x < 24; x++) it = abi.encodePacked(it, uint8(y), uint8(x), uint8(1), uint8(((x + y) % 2) + 1));
+        }
+        uint256 id = items.addItem(it, "Checker", 0, 0);
+        string memory svg = renderer.itemSvg(it);
+        assertGt(bytes(svg).length, 32000);
+        assertGt(bytes(items.uri(id)).length, 40000);
+        _launch();
+        uint256 a = _mint(alice, 7, 0);
+        items.setSale(id, 0, true);
+        vm.startPrank(alice);
+        items.buy(id, 1);
+        avatars.equip(a, id);
+        vm.stopPrank();
+        assertGt(bytes(avatars.dressedTokenURI(a)).length, 20000);
+    }
+
     // ---------------- gas ----------------
     function test_Gas() public {
         _launch();

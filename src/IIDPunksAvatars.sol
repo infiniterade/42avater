@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// DRAFT - not compiled, not audited. Compile with viaIR. OpenZeppelin v5.
+// Not audited by a third party. Compile with viaIR (solc 0.8.30, cancun). OpenZeppelin v5.
 // The renderer mirrors onchain.js renderFromBytes(), which is tested against generate_punks.py and engine.js.
 //
 // Model: the avatar (all parts chosen at mint) is fixed forever. Special items (ERC-1155) can be bought later and
@@ -192,7 +192,8 @@ contract IIDPunksRenderer {
     }
 
     function _svg(uint256[] memory cols) private pure returns (string memory) {
-        bytes memory buf = new bytes(16384);
+        // worst case: 576 one-pixel rects of 57 bytes + header and footer = 32,927 bytes
+        bytes memory buf = new bytes(33024);
         uint256 n = _put(buf, 0, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" shape-rendering="crispEdges">');
         for (uint256 y = 0; y < 24; y++) {
             uint256 x = 0;
