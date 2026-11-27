@@ -55,12 +55,17 @@ export function createSigner(deps, env) {
   // The design must be exactly what the maker's engine produces for it (the rules are applied by normalize()).
   function designOf(dna) {
     if (!/^0x[0-9a-f]{64}$/.test(dna)) fail(400, "bad_design", "The design code is not valid.");
-    let sel;
-    try { sel = E.normalize(E.decode(dna)); } catch { fail(400, "bad_design", "The design code is not valid."); }
-    if (!sel || !sel.type || E.encode(sel) !== dna) fail(400, "bad_design", "The design does not follow the rules.");
-    const record = O.tokenRecord(PT, STRS, sel).bytes;
-    const look = O.lookHashOfGrid(O.renderFromBytes(PB, record, []));
-    return { record, look };
+    // Anything the engine can't take apart, rebuild and draw is refused (no part of it may throw later).
+    try {
+      const sel = E.normalize(E.decode(dna));
+      if (sel && sel.type && E.encode(sel) === dna) {
+        const grid = E.render(E.build(sel).recipe);
+        const record = O.tokenRecord(PT, STRS, sel).bytes;
+        const look = O.lookHashOfGrid(O.renderFromBytes(PB, record, []));
+        if (look === O.lookHashOfGrid(grid)) return { record, look };
+      }
+    } catch { /* falls through */ }
+    fail(400, "bad_design", "The design does not follow the rules.");
   }
 
   async function reserve(look, holder, caw, expires) {
@@ -81,7 +86,8 @@ export function createSigner(deps, env) {
       if (!body || typeof body !== "object") fail(400, "bad_request", "Bad request.");
       const { to, cawId, dna, time, proof } = body;
       if (typeof to !== "string" || !/^0x[0-9a-fA-F]{40}$/.test(to)) fail(400, "bad_request", "Bad address.");
-      if (typeof cawId !== "string" || !/^[0-9]{1,78}$/.test(cawId) || BigInt(cawId) >= 2n ** 256n) fail(400, "bad_request", "Bad CAW NAME id.");
+      // canonical decimal only ("7", not "07"): the reservation is kept per CAW NAME
+      if (typeof cawId !== "string" || !/^(0|[1-9][0-9]{0,77})$/.test(cawId) || BigInt(cawId) >= 2n ** 256n) fail(400, "bad_request", "Bad CAW NAME id.");
       if (typeof dna !== "string") fail(400, "bad_request", "Bad design.");
       if (!Number.isSafeInteger(time)) fail(400, "bad_request", "Bad time.");
       if (typeof proof !== "string" || !/^0x[0-9a-fA-F]{130}$/.test(proof)) fail(400, "bad_request", "Bad proof.");

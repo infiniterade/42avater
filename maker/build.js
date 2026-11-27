@@ -18,8 +18,10 @@ const arg = k => { const i = process.argv.indexOf(k); return i > 0 ? process.arg
 const env = k => (process.env[k] || "").trim();
 const envChain = env("MAKER_CHAIN_RPC") && env("MAKER_CHAIN_AVATARS")
   ? { rpc: env("MAKER_CHAIN_RPC"), avatars: env("MAKER_CHAIN_AVATARS"), items: env("MAKER_CHAIN_ITEMS"), signer: env("MAKER_SIGNER_URL") } : null;
+let chainCfg = {};
 if (arg("--chain") || envChain) {
   const c = envChain || JSON.parse(fs.readFileSync(arg("--chain"), "utf8"));
+  chainCfg = c;
   const local = /^http:\/\/(127\.0\.0\.1|localhost)[:/]/;
   const url = u => /^https:\/\//.test(u) || local.test(u);
   const addr = a => /^0x[0-9a-fA-F]{40}$/.test(a);
@@ -55,5 +57,11 @@ const out = arg("--out") || path.join(__dirname, "dist", "index.html");
 fs.mkdirSync(path.dirname(out), { recursive: true });
 fs.writeFileSync(out, h);
 // security headers for Cloudflare Pages (only next to the default output)
-if (!arg("--out")) fs.copyFileSync(path.join(__dirname, "_headers"), path.join(path.dirname(out), "_headers"));
+// The page may only talk to its own chain RPC and signing server (Content-Security-Policy connect-src).
+if (!arg("--out")) {
+  const origins = [chainCfg.rpc, chainCfg.signer].filter(Boolean).map(u => new URL(u).origin);
+  const connect = [...new Set(origins)].join(" ") || "'none'";
+  fs.writeFileSync(path.join(path.dirname(out), "_headers"),
+    fs.readFileSync(path.join(__dirname, "_headers"), "utf8").replace("__CONNECT__", connect));
+}
 console.log(path.relative(process.cwd(), out), h.length, "bytes");
