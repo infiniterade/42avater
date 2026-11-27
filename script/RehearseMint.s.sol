@@ -43,10 +43,14 @@ contract RehearseMint is Script {
 
         vm.startBroadcast();
         uint256 id = avatars.mint(cawId, rec, deadline, abi.encodePacked(r, s, v));
-        items.claimLaunch(id);
+        // launch gift: one item of your choice per avatar; take the first item of this test case and wear it
         for (uint256 slot = 0; slot < 6; slot++) {
             uint256 itemId = vm.parseJsonUint(vec, string.concat(c, ".itemIds[", vm.toString(slot), "]"));
-            if (itemId != 0) avatars.equip(id, itemId);
+            if (itemId != 0) {
+                items.claimLaunch(id, itemId);
+                avatars.equip(id, itemId);
+                break;
+            }
         }
         vm.stopBroadcast();
         console.log("minted avatar:", id);

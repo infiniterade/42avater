@@ -82,7 +82,7 @@
     <div class="row"><label>CAW NAME の番号 <input id="cawId" size="8" placeholder="1"></label><button id="checkCaw">持ち主を確かめる</button><span id="cawInfo" class="sub"></span></div>
     <div class="row"><label>DNA <input id="dna" size="70" placeholder="0x…（空ならランダム）"></label><button id="preview">プレビュー</button><button id="random">ランダム</button></div>
     <div class="pic"><div class="box" id="pv"></div><div id="pvInfo" class="sub" style="max-width:520px"></div></div>
-    <div class="row"><button id="mint" class="go">署名してミント</button><button id="claim">ローンチ記念を受け取る</button></div>
+    <div class="row"><button id="mint" class="go">署名してミント</button><label>ローンチ記念で受け取るアイテム <select id="claimItem"></select></label><button id="claim">ローンチ記念を受け取る（1体につき1つ）</button></div>
     <div class="row"><label>アバターの番号 <input id="avatarId" size="8"></label></div>
     <h3 style="margin:14px 0 4px;font-size:15px">付けているアイテム</h3>
     <div id="worn" class="sub">アバターの番号を入れて「表示を更新」を押すと出ます。</div>
@@ -401,11 +401,13 @@
     say(`ミントしました。アバター #${$("avatarId").value}`, "ok");
   });
   $("claim").onclick = () => act(async () => {
-    await send({ to: st.I, data: call("claimLaunch(uint256)", ["uint256"], [BigInt($("avatarId").value || "0")]) }, "ローンチ記念を受け取る");
+    const itemId = BigInt($("claimItem").value);
+    await send({ to: st.I, data: call("claimLaunch(uint256,uint256)", ["uint256", "uint256"], [BigInt($("avatarId").value || "0"), itemId]) }, "ローンチ記念を受け取る");
     await drawItems();
-    say("ローンチ記念を受け取りました。付けたいアイテムにチェックを入れてください。", "ok");
+    say(`ローンチ記念で「${$("claimItem").selectedOptions[0].textContent}」を受け取りました。付けるならチェックを入れてください。`, "ok");
   });
   const SLOT_JA = ["帽子", "メガネ", "口元", "首", "背景", "髪色"];
+  for (const it of ITEM_DATA) $("claimItem").insertAdjacentHTML("beforeend", `<option value="${it.id}">${it.ja}</option>`);
   // what the avatar wears now, read from the chain (equippedOf), each with its own "外す" button
   async function drawWorn() {
     const el = $("worn");

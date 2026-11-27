@@ -394,13 +394,14 @@ contract IIDPunksItems is ERC1155, Ownable {
     uint256 public itemCount;
     mapping(uint256 => Item) public items;
 
-    // Launch gift: every avatar can claim one of each launch item for free, once, until launchEnd.
+    // Launch gift: every avatar can claim ONE launch item of its owner's choice for free, once, until launchEnd.
     uint256 public launchEnd;                         // unix time; 0 = no launch gift
     uint256[] private _launchItems;
+    mapping(uint256 => bool) public isLaunchItem;
     mapping(uint256 => bool) public launchClaimed;    // avatar tokenId => already claimed
 
     event ItemAdded(uint256 indexed id, uint8 slot, string name);
-    event LaunchClaimed(uint256 indexed avatarId, address indexed to);
+    event LaunchClaimed(uint256 indexed avatarId, address indexed to, uint256 itemId);
 
     /// Collection name and symbol shown by marketplaces and wallets (fixed at deploy).
     string public constant name = "42AM_SpecialItems";
@@ -431,31 +432,29 @@ contract IIDPunksItems is ERC1155, Ownable {
 
     /// Set which items are in the launch gift and until when it can be claimed.
     function setLaunch(uint256[] calldata ids, uint256 end) external onlyOwner {
-        for (uint256 i = 0; i < ids.length; i++) require(ids[i] >= 1 && ids[i] <= itemCount, "no item");
+        for (uint256 i = 0; i < _launchItems.length; i++) isLaunchItem[_launchItems[i]] = false;
+        for (uint256 i = 0; i < ids.length; i++) {
+            require(ids[i] >= 1 && ids[i] <= itemCount, "no item");
+            isLaunchItem[ids[i]] = true;
+        }
         _launchItems = ids;
         launchEnd = end;
     }
 
     function launchItems() external view returns (uint256[] memory) { return _launchItems; }
 
-    /// Free launch gift: one of each launch item per avatar. Only the avatar's owner can claim, only once per avatar.
-    function claimLaunch(uint256 avatarId) external {
+    /// Free launch gift: one launch item of your choice per avatar. Only the avatar's owner can claim, once per avatar.
+    function claimLaunch(uint256 avatarId, uint256 itemId) external {
         require(block.timestamp <= launchEnd, "launch gift closed");
+        require(isLaunchItem[itemId], "not a launch item");
         require(IERC721(avatars).ownerOf(avatarId) == msg.sender, "not avatar owner");
         require(!launchClaimed[avatarId], "already claimed");
         launchClaimed[avatarId] = true;
-        uint256 n = _launchItems.length;
-        uint256[] memory ids = new uint256[](n);
-        uint256[] memory values = new uint256[](n);
-        for (uint256 i = 0; i < n; i++) {
-            Item storage it = items[_launchItems[i]];
-            require(it.maxSupply == 0 || it.minted < it.maxSupply, "sold out");
-            it.minted += 1;
-            ids[i] = _launchItems[i];
-            values[i] = 1;
-        }
-        _mintBatch(msg.sender, ids, values, "");
-        emit LaunchClaimed(avatarId, msg.sender);
+        Item storage it = items[itemId];
+        require(it.maxSupply == 0 || it.minted < it.maxSupply, "sold out");
+        it.minted += 1;
+        _mint(msg.sender, itemId, 1, "");
+        emit LaunchClaimed(avatarId, msg.sender, itemId);
     }
 
     function buy(uint256 id, uint256 amount) external payable {

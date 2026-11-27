@@ -1,7 +1,7 @@
 // Special items for 42gAvaterMaker: bought later and equipped on top of a fixed avatar.
 // One item per slot: hat / eyes / mouth / neck / bg.  Each item has its own palette.
 //   pal: { char: "#RRGGBB" }  or  { char: ["#RRGGBB", "noOutline"] }   rows: { y: "24 chars" } ('.' = empty)
-// price / supply: null = not decided yet.  LAUNCH_GIFT: all items free at launch (one of each per avatar, limited time)
+// price / supply: null = not decided yet.  LAUNCH_GIFT: at launch, every avatar can claim any ONE item for free (limited time)
 (function (root) {
   const ITEMS = [
     { id: 1, slot: "hat", name: "Wizard Hat", ja: "魔法使いの帽子", price: null, supply: null,

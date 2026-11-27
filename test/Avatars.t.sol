@@ -238,37 +238,56 @@ contract AvatarsTest is Test {
     }
 
     // ---------------- special items ----------------
+    /// Gives `to` one of every item (free sale), for tests that only need items in the wallet.
+    function _giveAll(address to) internal {
+        for (uint256 i = 1; i <= ITEMS; i++) {
+            items.setSale(i, 0, true);
+            vm.prank(to);
+            items.buy(i, 1);
+        }
+    }
+
     function _launch() internal {
         uint256[] memory ids = new uint256[](ITEMS);
         for (uint256 i = 0; i < ITEMS; i++) ids[i] = i + 1;
         items.setLaunch(ids, block.timestamp + 7 days);
     }
 
-    function test_LaunchGift_oncePerAvatar() public {
+    function test_LaunchGift_oneItemOfYourChoicePerAvatar() public {
         _launch();
         uint256 a = _mint(alice, 7, 0);
         vm.prank(alice);
-        items.claimLaunch(a);
-        for (uint256 i = 1; i <= ITEMS; i++) assertEq(items.balanceOf(alice, i), 1);
+        items.claimLaunch(a, 7);                                       // Gold Medal
+        assertEq(items.balanceOf(alice, 7), 1);
+        for (uint256 i = 1; i <= ITEMS; i++) if (i != 7) assertEq(items.balanceOf(alice, i), 0);
         vm.prank(alice);
         vm.expectRevert(bytes("already claimed"));
-        items.claimLaunch(a);
+        items.claimLaunch(a, 3);
         // someone who does not own the avatar
         vm.prank(bob);
         vm.expectRevert(bytes("not avatar owner"));
-        items.claimLaunch(a);
+        items.claimLaunch(a, 3);
         // the avatar is sold: the buyer cannot claim it again
         vm.prank(alice);
         avatars.transferFrom(alice, bob, a);
         vm.prank(bob);
         vm.expectRevert(bytes("already claimed"));
-        items.claimLaunch(a);
+        items.claimLaunch(a, 3);
         // a second avatar (second CAW NAME) gets its own gift
         caw.mintTo(alice, 8);
         uint256 b = _mint(alice, 8, 1);
         vm.prank(alice);
-        items.claimLaunch(b);
-        assertEq(items.balanceOf(alice, 1), 2);
+        vm.expectRevert(bytes("not a launch item"));
+        items.claimLaunch(b, 99);
+        vm.prank(alice);
+        items.claimLaunch(b, 7);
+        assertEq(items.balanceOf(alice, 7), 2);
+        // only the listed items: after the list changes, an old item is no longer a launch item
+        uint256[] memory ids = new uint256[](1);
+        ids[0] = 3;
+        items.setLaunch(ids, block.timestamp + 1 days);
+        assertTrue(!items.isLaunchItem(7));
+        assertTrue(items.isLaunchItem(3));
     }
 
     function test_LaunchGift_closedAfterEnd() public {
@@ -277,7 +296,7 @@ contract AvatarsTest is Test {
         vm.warp(block.timestamp + 8 days);
         vm.prank(alice);
         vm.expectRevert(bytes("launch gift closed"));
-        items.claimLaunch(a);
+        items.claimLaunch(a, 1);
     }
 
     function test_BuyItem() public {
@@ -306,8 +325,7 @@ contract AvatarsTest is Test {
     function test_EquipUnequip_recordNeverChanges() public {
         _launch();
         uint256 a = _mint(alice, 7, 0);
-        vm.prank(alice);
-        items.claimLaunch(a);
+        _giveAll(alice);
         bytes memory rec = avatars.recordOf(a);
         string memory plain = avatars.tokenURI(a);
         assertEq(avatars.dressedTokenURI(a), plain);
@@ -348,8 +366,7 @@ contract AvatarsTest is Test {
     function test_ItemsReturnToSellerOnTransfer() public {
         _launch();
         uint256 a = _mint(alice, 7, 0);
-        vm.prank(alice);
-        items.claimLaunch(a);
+        _giveAll(alice);
         string memory plain = avatars.tokenURI(a);
         vm.startPrank(alice);
         avatars.equip(a, 9);                                   // Sunset background
@@ -379,8 +396,7 @@ contract AvatarsTest is Test {
         for (uint256 i = 30; i < 40; i++) {
             uint256 cawId = 100 + i;
             uint256 a = _mint(alice, cawId, i);
-            vm.prank(alice);
-            items.claimLaunch(a);
+            _giveAll(alice);
             for (uint256 s = 0; s < SLOTS; s++) {
                 uint256 itemId = vm.parseJsonUint(vec, _c(i, string.concat("itemIds[", vm.toString(s), "]")));
                 if (itemId != 0) { vm.prank(alice); avatars.equip(a, itemId); }
@@ -397,8 +413,7 @@ contract AvatarsTest is Test {
         _launch();
         // case 0 is a Male; find a case whose hair is visible: compare plain vs dyed picture
         uint256 a = _mint(alice, 7, 0);
-        vm.prank(alice);
-        items.claimLaunch(a);
+        _giveAll(alice);
         assertEq(items.slotOf(11), 5);
         string memory plain = avatars.tokenURI(a);
         vm.prank(alice);
@@ -459,8 +474,9 @@ contract AvatarsTest is Test {
 
         vm.prank(alice);
         g = gasleft();
-        items.claimLaunch(a);
-        console.log("claimLaunch (11 items) gas:", g - gasleft());
+        items.claimLaunch(a, 10);
+        console.log("claimLaunch (1 item) gas:", g - gasleft());
+        _giveAll(alice);
 
         vm.prank(alice);
         g = gasleft();
