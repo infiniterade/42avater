@@ -1,0 +1,34 @@
+{
+  "note": "42 Chain TEST deployment (current contract code, test CAW NAMEs). Used by https://test.42avater.pages.dev and the 42avater-signer-test Worker. Not production.",
+  "chainId": 421018,
+  "deployer": "0x2493c525577701ea4833de6d08d7e86405b54200",
+  "renderer": "0x7ff39785c61e41d4a94c236172b6918db8909a74",
+  "items": "0x6b54a2Ab91867fa6889Ffd3d07C24914500b7243",
+  "avatars": "0xDFB2C1ddb343374a87C6D45F3137f11992929A95",
+  "signer": "0x09060f1283d25ee935916d845bce52d33e6216d3",
+  "cawNames": "0xa67874FFAD0b8a0c1E587e1357fD03494518176D",
+  "launchEnd": "2026-12-28T22:11:33Z",
+  "checkedOnChain": "2026-11-28: avatars.itemsContract/renderer/cawNames/signer, items.avatars/renderer, itemCount 11, owner of avatars = 0 (renounced), mintingClosed = false",
+  "transactions": [
+    {
+      "label": "Items を置く",
+      "hash": "0x2d37033903dee49653c11d52d696fcd34f774151e6fcda330a3286719f200f6f"
+    },
+    {
+      "label": "Avatars を置く",
+      "hash": "0x15f5d5e726fcb1dfe556fd9bb083c6e689f7fa97458ebd1d593107fe43ebfef4"
+    },
+    {
+      "label": "setAvatars",
+      "hash": "0x612e3221efbcee8a9d93a4acd8ba3de46fb9b799877a32b3e8b8274c196e928f"
+    },
+    {
+      "label": "setCawNames",
+      "hash": "0x23170d7c0d6e35d505f62a77e788a522b35cc438cc98e7ee8d9b3f722f3f1ee8"
+    },
+    {
+      "label": "setLaunch",
+      "hash": "0x8aaf8e3b6c816d796541ffd8b12919070ebd20a94dacf226378ff7cb23a61910"
+    }
+  ]
+}

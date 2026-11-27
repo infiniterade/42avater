@@ -5,7 +5,17 @@ $root = [IO.Path]::GetFullPath((Split-Path -Parent $MyInvocation.MyCommand.Path)
 $port = 8642
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://localhost:$port/")
-$listener.Start()
+try {
+  $listener.Start()
+} catch {
+  # already running (an earlier window is still open): just open the page in the browser
+  Write-Host ""
+  Write-Host "  サーバーはもう動いています（前に開いた黒い画面が残っています）。そのままページを開きます。"
+  Write-Host "  http://localhost:$port/avatars-placement.html"
+  Write-Host ""
+  Start-Process "http://localhost:$port/avatars-placement.html"
+  exit 0
+}
 Write-Host ""
 Write-Host "  42gAvaterMaker のページを開いています: http://localhost:$port/avatars-placement.html"
 Write-Host "  メーカー:                               http://localhost:$port/42gAvaterMaker.html"

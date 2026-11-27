@@ -1,0 +1,20 @@
+# Test signer: 42 Chain test contracts (re-deployed 2026-11-28) and the test CAW NAMEs.
+# Used by https://test.42avater.pages.dev (the 42avater Pages project's Preview environment).
+# Deploy: npx wrangler deploy -c wrangler.test.toml   (Workers Builds runs this from the signer/ folder)
+# SIGNER_KEY is a secret set in the dashboard: the TEST signer account only (no funds, never used elsewhere).
+name = "42avater-signer-test"
+main = "src/worker.mjs"
+compatibility_date = "2025-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "42avater-signer-test"
+database_id = "e8b4adea-8c54-4a29-811a-3c4eb5b40379"
+
+[vars]
+CHAIN_ID = "421018"
+RPC_URL = "https://evm-rpc.infinitedrive.xyz"
+GENESIS = "0xcdf6d330ca32a6e9d7597c5cf220d77993793a6ea4bc0d8f723ec71f958741ea"
+AVATARS = "0xDFB2C1ddb343374a87C6D45F3137f11992929A95"
+ALLOWED_ORIGINS = "https://test.42avater.pages.dev"
+SIGNATURE_TTL = "900"
