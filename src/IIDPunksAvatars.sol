@@ -532,7 +532,7 @@ contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
     uint256 private _lastId;                             // ids count up from 1 (totalSupply() comes from ERC721Enumerable)
     string public constant NAME = "42gAvaterMaker";
     string public constant DESCRIPTION =
-        "Pixel avatars for 42GRAM, made from IID Punks parts. One per CAW NAME. Fully on-chain.";
+        "Pixel avatars for 42GRAM, the decentralized social network. One per CAW NAME. Fully on-chain.";
 
     mapping(uint256 => bytes) private _record;
     mapping(bytes32 => bool) public lookTaken;            // a minted picture exists only once
