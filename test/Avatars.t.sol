@@ -306,10 +306,52 @@ contract AvatarsTest is Test {
         vm.expectRevert(bytes("price"));
         items.buy{value: 0.005 ether}(3, 1);
         vm.prank(bob);
+        vm.expectRevert(bytes("price"));                       // paying too much is refused too
+        items.buy{value: 0.03 ether}(3, 2);
+        vm.prank(bob);
         items.buy{value: 0.02 ether}(3, 2);
         assertEq(items.balanceOf(bob, 3), 2);
+        assertEq(address(items).balance, 0.02 ether);
         vm.expectRevert(bytes("not on sale"));
         items.buy(4, 1);
+    }
+
+    function test_AddItem_rejectsBadName() public {
+        bytes memory ok = hex"0001" hex"00FF0000" hex"00000101";
+        vm.expectRevert(bytes("name"));
+        items.addItem(ok, 'Bad"Name', 0, 0);
+        vm.expectRevert(bytes("name"));
+        items.addItem(ok, "Back\\slash", 0, 0);
+        vm.expectRevert(bytes("name"));
+        items.addItem(ok, "Line\nbreak", 0, 0);
+        vm.expectRevert(bytes("name"));
+        items.addItem(ok, "", 0, 0);
+        uint256 id = items.addItem(ok, unicode"Good Name 金メダル", 0, 0);
+        assertEq(items.nameOf(id), unicode"Good Name 金メダル");
+    }
+
+    /// Moving the items contract to a multisig takes two steps: the new owner must accept.
+    function test_ItemsOwnershipTwoStep() public {
+        items.transferOwnership(bob);
+        assertEq(items.owner(), address(this));
+        assertEq(items.pendingOwner(), bob);
+        vm.prank(alice);
+        vm.expectRevert();
+        items.acceptOwnership();
+        vm.prank(bob);
+        items.acceptOwnership();
+        assertEq(items.owner(), bob);
+    }
+
+    function test_SetCawNames_refusesZeroAndNonContract() public {
+        IIDPunksAvatars fresh = new IIDPunksAvatars(renderer, items, signer, 100);
+        vm.expectRevert(bytes("CAW NAME contract"));
+        fresh.setCawNames(address(0));
+        vm.expectRevert(bytes("CAW NAME contract"));
+        fresh.setCawNames(address(0xBEEF));                    // no code there
+        assertEq(fresh.owner(), address(this));                // still not set, still owned
+        fresh.setCawNames(address(caw));
+        assertEq(fresh.owner(), address(0));
     }
 
     function test_AddItem_rejectsBrokenDesign() public {

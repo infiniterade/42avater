@@ -12,6 +12,7 @@ import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
@@ -386,7 +387,7 @@ contract IIDPunksRenderer {
 }
 
 /// Special items (ERC-1155). New designs can be added later; a design can never be changed once added.
-contract IIDPunksItems is ERC1155, Ownable {
+contract IIDPunksItems is ERC1155, Ownable2Step {
     struct Item { uint8 slot; address data; string name; uint256 price; uint256 maxSupply; uint256 minted; bool onSale; }
 
     IIDPunksRenderer public immutable renderer;
@@ -419,9 +420,20 @@ contract IIDPunksItems is ERC1155, Ownable {
         external onlyOwner returns (uint256 id)
     {
         renderer.validateItem(data);
+        _checkName(name);
         id = ++itemCount;
         items[id] = Item(uint8(data[0]), SSTORE2.write(data), name, price, maxSupply, 0, false);
         emit ItemAdded(id, uint8(data[0]), name);
+    }
+
+    /// Item names go into JSON metadata as they are: 1-64 bytes, no quote, backslash or control characters.
+    function _checkName(string calldata name) private pure {
+        bytes calldata b = bytes(name);
+        require(b.length >= 1 && b.length <= 64, "name");
+        for (uint256 i = 0; i < b.length; i++) {
+            uint8 c = uint8(b[i]);
+            require(c >= 0x20 && c != 0x22 && c != 0x5C && c != 0x7F, "name");
+        }
     }
 
     function setSale(uint256 id, uint256 price, bool onSale) external onlyOwner {
@@ -460,7 +472,7 @@ contract IIDPunksItems is ERC1155, Ownable {
     function buy(uint256 id, uint256 amount) external payable {
         Item storage it = items[id];
         require(it.onSale, "not on sale");
-        require(amount > 0 && msg.value >= it.price * amount, "price");
+        require(amount > 0 && msg.value == it.price * amount, "price");   // exact amount: nothing is kept by mistake
         require(it.maxSupply == 0 || it.minted + amount <= it.maxSupply, "sold out");
         it.minted += amount;
         _mint(msg.sender, id, amount, "");
@@ -506,8 +518,7 @@ contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
 
     IIDPunksRenderer public immutable renderer;
     IIDPunksItems public immutable itemsContract;
-    /// CAW NAME (username NFT) contract on this chain, or address(0) if CAW NAMEs live on another chain.
-    /// Same chain: ownership is checked on-chain. Other chain: the signer checks ownership before signing.
+    /// CAW NAME (username NFT) contract on this chain (42 Chain). Ownership is checked on-chain at every mint.
     /// Set exactly once with setCawNames() after the CAW NFT launches; minting is closed until then.
     address public cawNames;
     bool public cawConfigured;
@@ -540,10 +551,11 @@ contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
         maxSupply = maxSupply_;
     }
 
-    /// One-time setting, after the CAW NFT launches. address(0) = CAW NAMEs are on another chain (signer checks).
+    /// One-time setting, after the CAW NFT launches. Must be a contract on this chain (address(0) is refused).
     /// This is the last owner action: ownership is given up in the same call, so the contract has no admin after it.
     function setCawNames(address a) external onlyOwner {
         require(!cawConfigured, "already set");
+        require(a != address(0) && a.code.length > 0, "CAW NAME contract");
         cawNames = a;
         cawConfigured = true;
         emit CawNamesSet(a);
@@ -559,7 +571,7 @@ contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
         require(block.timestamp <= deadline, "expired");
         require(totalSupply() < maxSupply, "sold out");
         require(avatarOfCaw[cawId] == 0, "CAW NAME already used");
-        if (cawNames != address(0)) require(IERC721(cawNames).ownerOf(cawId) == msg.sender, "not CAW NAME owner");
+        require(IERC721(cawNames).ownerOf(cawId) == msg.sender, "not CAW NAME owner");
         bytes32 digest = _hashTypedDataV4(
             keccak256(abi.encode(MINT_TYPEHASH, msg.sender, cawId, keccak256(record), deadline))
         );
