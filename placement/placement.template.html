@@ -84,8 +84,11 @@
     <div class="pic"><div class="box" id="pv"></div><div id="pvInfo" class="sub" style="max-width:520px"></div></div>
     <div class="row"><button id="mint" class="go">署名してミント</button><button id="claim">ローンチ記念を受け取る</button></div>
     <div class="row"><label>アバターの番号 <input id="avatarId" size="8"></label></div>
+    <h3 style="margin:14px 0 4px;font-size:15px">付けているアイテム</h3>
+    <div id="worn" class="sub">アバターの番号を入れて「表示を更新」を押すと出ます。</div>
+    <h3 style="margin:14px 0 4px;font-size:15px">持っているアイテム（チェックして付ける）</h3>
     <div class="items" id="items"></div>
-    <div class="row"><button id="equip">チェックしたアイテムを付ける</button><button id="read">チェーンから絵を読み出す</button></div>
+    <div class="row"><button id="equip">チェックしたアイテムを付ける</button><button id="refreshItems">表示を更新</button><button id="read">チェーンから絵を読み出す</button></div>
     <div class="pic"><div class="box" id="chainPic"></div><div id="chainInfo" class="sub" style="max-width:520px"></div></div>
   </section>
 
@@ -394,6 +397,7 @@
     const T = keccak256("Transfer(address,address,uint256)");
     const lg = r.logs.find(l => same(l.address, st.A) && l.topics[0] === T);
     if (lg) { $("avatarId").value = BigInt(lg.topics[3]).toString(); }
+    await drawItems();
     say(`ミントしました。アバター #${$("avatarId").value}`, "ok");
   });
   $("claim").onclick = () => act(async () => {
@@ -401,7 +405,34 @@
     await drawItems();
     say("ローンチ記念を受け取りました。付けたいアイテムにチェックを入れてください。", "ok");
   });
+  const SLOT_JA = ["帽子", "メガネ", "口元", "首", "背景", "髪色"];
+  // what the avatar wears now, read from the chain (equippedOf), each with its own "外す" button
+  async function drawWorn() {
+    const el = $("worn");
+    if (!st.aOk || !/^\d+$/.test($("avatarId").value.trim())) { el.textContent = "アバターの番号を入れて「表示を更新」を押すと出ます。"; return; }
+    const id = BigInt($("avatarId").value.trim());
+    let r;
+    try { r = strip(await view(st.A, call("equippedOf(uint256)", ["uint256"], [id]))); }
+    catch { el.textContent = `アバター #${id} はありません。`; return; }
+    const ids = [...Array(6)].map((_, i) => BigInt("0x" + r.slice(i * 64, i * 64 + 64)));
+    if (!ids.some(Boolean)) { el.textContent = "何も付けていません。"; return; }
+    el.innerHTML = "";
+    ids.forEach((itemId, slot) => {
+      if (!itemId) return;
+      const it = ITEM_DATA.find(x => BigInt(x.id) === itemId);
+      const row = document.createElement("div"); row.className = "row";
+      row.innerHTML = `<span>${SLOT_JA[slot]}：${it ? it.ja : "アイテム " + itemId}</span>`;
+      const b = document.createElement("button"); b.textContent = "外す";
+      b.onclick = () => act(async () => {
+        await send({ to: st.A, data: call("unequip(uint256,uint8)", ["uint256", "uint8"], [id, slot]) }, `外す: ${SLOT_JA[slot]}`);
+        await drawItems();
+        say(`${SLOT_JA[slot]}のアイテムを外しました。アイテムはウォレットに戻りました。`, "ok");
+      });
+      row.appendChild(b); el.appendChild(row);
+    });
+  }
   async function drawItems() {
+    await drawWorn();
     const el = $("items"); el.innerHTML = "";
     for (const it of ITEM_DATA) {
       let bal = 0n; try { bal = decUint(await view(st.I, call("balanceOf(address,uint256)", ["address", "uint256"], [account, it.id]))); } catch {}
@@ -416,6 +447,8 @@
     await drawItems();
     say("付けました。「チェーンから絵を読み出す」で確かめられます。", "ok");
   });
+  $("refreshItems").onclick = () => act(async () => { await drawItems(); say("付けているアイテムと持っているアイテムを読み直しました。", "ok"); });
+  $("avatarId").addEventListener("change", () => { if (st.aOk) drawItems().catch(() => {}); });
   $("read").onclick = () => act(async () => {
     const id = BigInt($("avatarId").value || "0");
     const uri = decString(await view(st.A, call("tokenURI(uint256)", ["uint256"], [id])));
