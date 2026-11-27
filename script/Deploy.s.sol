@@ -20,7 +20,7 @@ contract Deploy is Script {
         renderer = new IIDPunksRenderer();
         renderer.setData(vm.readFileBinary("data/parts.bin"), vm.readFileBinary("data/strings.bin"));
         items = new IIDPunksItems(renderer);
-        avatars = new IIDPunksAvatars(renderer, items, signer, 0, maxSupply);
+        avatars = new IIDPunksAvatars(renderer, items, signer, maxSupply);
         items.setAvatars(address(avatars));
         for (uint256 i = 0; i < ids.length; i++) {
             string memory k = string.concat("[", vm.toString(i), "]");

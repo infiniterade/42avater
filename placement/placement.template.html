@@ -257,8 +257,8 @@
     ["Avatars を置く", () => st.aOk, async () => {
       const signer = $("signer").value.trim() || account;
       if (!isAddr(signer)) throw new Error("署名者のアドレスが正しくありません。");
-      const r = await send({ data: DEPLOY.avatars + enc(["address", "address", "address", "uint256", "uint256"],
-        [st.R, st.I, signer, 0, BigInt($("maxSupply").value || "1000000")]) }, "IIDPunksAvatars を置く");
+      const r = await send({ data: DEPLOY.avatars + enc(["address", "address", "address", "uint256"],
+        [st.R, st.I, signer, BigInt($("maxSupply").value || "1000000")]) }, "IIDPunksAvatars を置く");
       $("aAvatars").value = r.contractAddress; save(); }],
     ["Items と Avatars をつなぐ", () => st.linked, async () => {
       await send({ to: st.I, data: call("setAvatars(address)", ["address"], [st.A]) }, "setAvatars"); }],
@@ -271,7 +271,7 @@
       } }],
   ];
   const STEPS2 = [
-    ["CAW NAME を設定する（1回だけ・変更不可）", () => st.cawSet, async () => {
+    ["CAW NAME を設定する（1回だけ・変更不可。オーナー権限もここで放棄）", () => st.cawSet, async () => {
       const caw = $("caw").value.trim();
       if (!isAddr(caw)) throw new Error("CAW NAME のアドレスが正しくありません。");
       const c = await code(caw);
@@ -280,7 +280,7 @@
         throw new Error("テスト用 CAW NFT のコードが、42GRAM に記録されたものと一致しません。送信しません。");
       const is721 = decUint(await view(caw, call("supportsInterface(bytes4)", ["bytes32"], ["80ac58cd" + "0".repeat(56)]))) !== 0n;
       if (!is721) throw new Error("そのコントラクトは ERC-721 ではありません。");
-      if (!confirm(`CAW NAME を ${caw} に設定します。1回だけで、変更できません。よろしいですか？`)) return;
+      if (!confirm(`CAW NAME を ${caw} に設定します。1回だけで、変更できません。\nこの操作でアバターのコントラクトのオーナー権限は放棄され、以後だれも設定を変えられなくなります。よろしいですか？`)) return;
       await send({ to: st.A, data: call("setCawNames(address)", ["address"], [caw]) }, "setCawNames"); }],
     ["ローンチ記念を開始する（全アイテム）", () => st.launchEnd > Date.now() / 1000, async () => {
       const days = Number($("launchDays").value || "30");

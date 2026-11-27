@@ -499,6 +499,8 @@ contract IIDPunksItems is ERC1155, Ownable {
 }
 
 /// The avatar NFT. The record written at mint is never changed. Special items are equipped on top.
+/// No admin after setup: minting is free forever, the signer is fixed at deploy, and setCawNames() (the only
+/// owner action) gives up ownership in the same call. Nobody can change minted avatars or how they are drawn.
 contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
     event Equipped(uint256 indexed tokenId, uint8 indexed slot, uint256 itemId);
 
@@ -512,8 +514,7 @@ contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
     event CawNamesSet(address cawNames);
     mapping(uint256 => uint256) public avatarOfCaw;      // CAW NAME tokenId => avatar id (0 = not used yet)
     mapping(uint256 => uint256) public cawOfAvatar;      // avatar id => CAW NAME tokenId it was minted with
-    address public signer;          // the maker backend that checks the design rules at mint
-    uint256 public price;
+    address public immutable signer;   // the maker backend that checks the design rules at mint (fixed forever)
     uint256 public immutable maxSupply;
     uint256 private _lastId;                             // ids count up from 1 (totalSupply() comes from ERC721Enumerable)
     string public constant NAME = "42gAvaterMaker";
@@ -529,31 +530,32 @@ contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
 
     event MintedWithCaw(uint256 indexed avatarId, uint256 indexed cawId, address indexed to);
 
-    constructor(IIDPunksRenderer r, IIDPunksItems it, address signer_, uint256 price_, uint256 maxSupply_)
+    constructor(IIDPunksRenderer r, IIDPunksItems it, address signer_, uint256 maxSupply_)
         ERC721("42gAvaterMaker", "42AM") Ownable(msg.sender) EIP712("IIDPunksAvatars", "1")
     {
         renderer = r;
         itemsContract = it;
+        require(signer_ != address(0), "signer");
         signer = signer_;
-        price = price_;
         maxSupply = maxSupply_;
     }
 
     /// One-time setting, after the CAW NFT launches. address(0) = CAW NAMEs are on another chain (signer checks).
+    /// This is the last owner action: ownership is given up in the same call, so the contract has no admin after it.
     function setCawNames(address a) external onlyOwner {
         require(!cawConfigured, "already set");
         cawNames = a;
         cawConfigured = true;
         emit CawNamesSet(a);
+        _transferOwnership(address(0));
     }
 
     /// One avatar per CAW NAME. The caller must own the CAW NAME; each CAW NAME can be used only once, forever
     /// (selling the CAW NAME afterwards does not give the new owner another avatar).
     function mint(uint256 cawId, bytes calldata record, uint256 deadline, bytes calldata sig)
-        external payable returns (uint256 id)
+        external returns (uint256 id)
     {
         require(cawConfigured, "CAW NAME not set yet");
-        require(msg.value >= price, "price");
         require(block.timestamp <= deadline, "expired");
         require(totalSupply() < maxSupply, "sold out");
         require(avatarOfCaw[cawId] == 0, "CAW NAME already used");
@@ -645,13 +647,5 @@ contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
                 }
             }
         }
-    }
-
-    // settings that never touch minted avatars
-    function setSigner(address s) external onlyOwner { signer = s; }
-    function setPrice(uint256 p) external onlyOwner { price = p; }
-    function withdraw() external onlyOwner {
-        (bool ok,) = payable(owner()).call{value: address(this).balance}("");
-        require(ok, "withdraw failed");
     }
 }

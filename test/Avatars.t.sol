@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import {Test, console} from "forge-std/Test.sol";
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IIDPunksRenderer, IIDPunksItems, IIDPunksAvatars} from "../src/IIDPunksAvatars.sol";
 
 /// Stand-in for CawNamesV2 (also an OpenZeppelin ERC721): only ownerOf matters to the avatars.
@@ -31,7 +32,7 @@ contract AvatarsTest is Test {
         renderer = new IIDPunksRenderer();
         renderer.setData(vm.readFileBinary("data/parts.bin"), vm.readFileBinary("data/strings.bin"));
         items = new IIDPunksItems(renderer);
-        avatars = new IIDPunksAvatars(renderer, items, signer, 0, 100000);
+        avatars = new IIDPunksAvatars(renderer, items, signer, 100000);
         items.setAvatars(address(avatars));
         caw = new MockCawNames();
         avatars.setCawNames(address(caw));
@@ -207,16 +208,19 @@ contract AvatarsTest is Test {
     }
 
     function test_MintClosedUntilCawNamesSet_andSetOnlyOnce() public {
-        IIDPunksAvatars fresh = new IIDPunksAvatars(renderer, items, signer, 0, 100);
+        IIDPunksAvatars fresh = new IIDPunksAvatars(renderer, items, signer, 100);
         caw.mintTo(alice, 7);
         uint256 dl = block.timestamp + 1 hours;
         bytes memory sig = _sig(alice, 7, _rec(0), dl, fresh);
         vm.prank(alice);
         vm.expectRevert(bytes("CAW NAME not set yet"));
         fresh.mint(7, _rec(0), dl, sig);
+        assertEq(fresh.owner(), address(this));
         fresh.setCawNames(address(caw));
-        vm.expectRevert(bytes("already set"));
+        assertEq(fresh.owner(), address(0));                   // no admin after setup
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, address(this)));
         fresh.setCawNames(address(0xdead));
+        assertEq(fresh.cawNames(), address(caw));
         vm.prank(alice);
         fresh.mint(7, _rec(0), dl, sig);
         assertEq(fresh.ownerOf(1), alice);
