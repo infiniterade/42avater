@@ -57,9 +57,12 @@ const out = arg("--out") || path.join(__dirname, "dist", "index.html");
 fs.mkdirSync(path.dirname(out), { recursive: true });
 fs.writeFileSync(out, h);
 // security headers for Cloudflare Pages (only next to the default output)
-// The page may only talk to its own chain RPC and signing server (Content-Security-Policy connect-src).
+// The page may only talk to its own chain RPC and signing server (Content-Security-Policy connect-src), and, when
+// minting is on, to the 42 Chain explorer's API (the list of CAW NAMEs a wallet holds; each one is checked on chain).
 if (!arg("--out")) {
-  const origins = [chainCfg.rpc, chainCfg.signer].filter(Boolean).map(u => new URL(u).origin);
+  const explorer = (h.match(/const EXPLORER = "(https:\/\/[^"]+)"/) || [])[1];
+  if (!explorer) throw new Error("EXPLORER not found in the page");
+  const origins = [chainCfg.rpc, chainCfg.signer, chainCfg.signer && explorer].filter(Boolean).map(u => new URL(u).origin);
   const connect = [...new Set(origins)].join(" ") || "'none'";
   fs.writeFileSync(path.join(path.dirname(out), "_headers"),
     fs.readFileSync(path.join(__dirname, "_headers"), "utf8").replace("__CONNECT__", connect));
