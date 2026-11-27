@@ -26,6 +26,20 @@
   - **ローンチ記念**：`setLaunch(ids, 終了時刻)` の期間中、アバター1体につき、対象アイテムから好きなものを1つ無料で受け取れます（`claimLaunch(avatarId, itemId)`、持ち主のみ・1体1回）。
 - **描画**（`IIDPunksRenderer`）：パーツデータ（約 18KB）を SSTORE2 で1回だけ書き込み、`tokenURI` で SVG と JSON を組み立てます。
 
+## 公開先
+
+メーカーのページは **https://42avater.pages.dev**（Cloudflare Pages。42GRAM とは別のサイト）。
+
+| Cloudflare Pages の設定 | 値 |
+| --- | --- |
+| リポジトリ | `infiniterade/42gram` |
+| 本番のブランチ | `main`（PR がマージされるまでは `avatars` をプレビューで） |
+| ビルドのコマンド | `node avatars/maker/build.js` |
+| 出力のフォルダー | `avatars/maker/dist` |
+| 環境変数（本番のコントラクトを置いたあと） | `MAKER_CHAIN_RPC` = `https://evm-rpc.infinitedrive.xyz`、`MAKER_CHAIN_AVATARS` = アバターのコントラクトのアドレス |
+
+環境変数がないあいだは「マイアバター」が「コントラクト公開後に使えます」と表示されます。`maker/_headers` で、ほかのサイトの枠の中に表示されないようにしています（ウォレットを使うページのクリックの乗っ取り対策）。
+
 ## 管理者権限
 
 | コントラクト | だれが何をできるか |
