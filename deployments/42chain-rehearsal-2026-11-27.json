@@ -1,0 +1,177 @@
+{
+  "note": "42 Chain rehearsal (test CAW NAMEs). Not for production: setCawNames points at the rehearsal CawNamesV2. Contracts as of commit 04654d5 (names 42gAvaterMaker / 42AM_SpecialItems; no ERC721Enumerable).",
+  "placedWith": "avatars/placement (MetaMask)",
+  "chainId": 421018,
+  "deployer": "0x2493c525577701ea4833de6d08d7e86405b54200",
+  "renderer": "0x70df045fa1033e563ca2d836505935f22468c73e",
+  "items": "0xa2534fea9033805a37d3ecdf4a60cb276342a404",
+  "avatars": "0x813585e2b36d6ecb9a732164208deefd43748245",
+  "cawNames": "0xa67874ffad0b8a0c1e587e1357fd03494518176d",
+  "codeHashes": {
+    "renderer": "0x3ea1beca34f20ed0309d0d3f5e19079cdecadc5931679ce44fc8bdd148497266",
+    "items": "0x5bb821b768a41442f0b1de39dc0afa6877f8fdaf5668ba2f6daf06de3156d59b",
+    "avatars": "0x5ddfe814b238a97a4c0dc309e58f1deec89ab3607f9ba0ece1c4982572c7b1d8"
+  },
+  "transactions": [
+    {
+      "label": "IIDPunksRenderer を置く",
+      "hash": "0x19794fa33cf64e7499a881087d7d18fe529bf4ee81562866823b654761bd7e4d",
+      "at": "2026-11-26T23:44:57.671Z"
+    },
+    {
+      "label": "パーツを書き込む",
+      "hash": "0x147e3766790f7d430109011f29b28bd02514eb598024816543b06d6b88425dff",
+      "at": "2026-11-26T23:45:06.277Z"
+    },
+    {
+      "label": "IIDPunksItems を置く",
+      "hash": "0x11fc1bebf64d386a0b2c91540259491fd95e34e636620c4d96da28891cc9e96a",
+      "at": "2026-11-26T23:45:18.669Z"
+    },
+    {
+      "label": "IIDPunksAvatars を置く",
+      "hash": "0x87afa74aa4bce7ea134ea519285ab2501e3718a50407e59e24564f367b664013",
+      "at": "2026-11-26T23:45:29.218Z"
+    },
+    {
+      "label": "setAvatars",
+      "hash": "0xd94353a3b25acf64b6bf4488290cb2d634ebb645c889baa093d2c2d48899a690",
+      "at": "2026-11-26T23:45:40.714Z"
+    },
+    {
+      "label": "アイテム 1/11「魔法使いの帽子」を登録",
+      "hash": "0xfbe0b425730d39b5b0bd277a13c49abbb03bc1ef66d2fcff182c841d56cbc6de",
+      "at": "2026-11-26T23:45:52.004Z"
+    },
+    {
+      "label": "アイテム 2/11「パーティーハット」を登録",
+      "hash": "0x4f53943c51021afd52f7fd118338845acb6ffbf767b0708aadc875833fbcad73",
+      "at": "2026-11-26T23:45:58.818Z"
+    },
+    {
+      "label": "アイテム 3/11「ハートのメガネ」を登録",
+      "hash": "0x8bad3903bc6d7598ab752ed2b42b215de0c65ab0cd51eeaf6cd5e44f416ac524",
+      "at": "2026-11-26T23:46:13.904Z"
+    },
+    {
+      "label": "アイテム 4/11「レインボーバイザー」を登録",
+      "hash": "0x8aaf26ff9e1c04cf9b4f5c3c913b5a11ef57a24e45964dcb0e0688f535f3f023",
+      "at": "2026-11-26T23:46:28.423Z"
+    },
+    {
+      "label": "アイテム 5/11「風船ガム」を登録",
+      "hash": "0x7bb7a7f58c693505f0740eb7aa1a805f5885d0fd38bc138a8dc6f756f15fedfd",
+      "at": "2026-11-26T23:46:36.324Z"
+    },
+    {
+      "label": "アイテム 6/11「くわえたバラ」を登録",
+      "hash": "0x12cc5e32855df9f8e1d7efe212f3b08f9df627764f7049412714b107a9bd78ea",
+      "at": "2026-11-26T23:46:51.430Z"
+    },
+    {
+      "label": "アイテム 7/11「金メダル」を登録",
+      "hash": "0xa80daed3f319809d0a42a8a2cc3c08f18b03e8555f749889cfbdd5403761bb35",
+      "at": "2026-11-26T23:47:00.422Z"
+    },
+    {
+      "label": "アイテム 8/11「ニットのマフラー」を登録",
+      "hash": "0x45b92110de58f1a17a12e860277d8462a9d841a873ce0a9272ff26691049db3f",
+      "at": "2026-11-26T23:47:13.246Z"
+    },
+    {
+      "label": "アイテム 9/11「夕焼け」を登録",
+      "hash": "0x48642ee000e18feb81e770a56736f5bd83bc7fd557da97560eccfe4ef0a6d976",
+      "at": "2026-11-26T23:47:22.114Z"
+    },
+    {
+      "label": "アイテム 10/11「星空」を登録",
+      "hash": "0xfec2707c1d27f1466405219cfb0aa4ce43a020e0aa2af2b5dc8122fe7109228d",
+      "at": "2026-11-26T23:47:33.466Z"
+    },
+    {
+      "label": "アイテム 11/11「レインボーヘアカラー」を登録",
+      "hash": "0x55acbe972ee97882510e4e4fc05de0e6fa0fe7541ec83515ecb20afdc409b05f",
+      "at": "2026-11-26T23:48:02.694Z"
+    },
+    {
+      "label": "setCawNames",
+      "hash": "0xa93377e91d4beee7fd8cd76dfd7a809730d86c64e18b872b3bb6a99c7de145d8",
+      "at": "2026-11-27T00:08:57.062Z"
+    },
+    {
+      "label": "setLaunch",
+      "hash": "0xce74b74509a42feea8273410f4c220a839325369a74a52840c7a9c3f645cc690",
+      "at": "2026-11-27T00:09:08.130Z"
+    },
+    {
+      "label": "ミント",
+      "hash": "0xa4dfb6024dfa31b8892a5777ec7b82bba8974fa5c83f55ebab4c69fa06d25bf6",
+      "at": "2026-11-27T00:09:23.506Z"
+    },
+    {
+      "label": "ローンチ記念を受け取る",
+      "hash": "0xb9d703506abda2d3760af9510c822ab512d7bd5b4b4eab68a6952da9fa40781b",
+      "at": "2026-11-27T00:09:33.994Z"
+    },
+    {
+      "label": "付ける: アイテム 1",
+      "hash": "0x1573c048ec1129cfc858742decd05b679d36ad6d4fc0f2b0c40914b0c1d2e45d",
+      "at": "2026-11-27T00:09:48.921Z"
+    },
+    {
+      "label": "付ける: アイテム 3",
+      "hash": "0x1b6e15b2ed0ff9320282d01b718f085e81730c0a0f06a455d26b47961d990bb1",
+      "at": "2026-11-27T00:10:19.158Z"
+    },
+    {
+      "label": "付ける: アイテム 2",
+      "hash": "0x79e55c6915c5348b051d1bedfb775d9acad61ca24cfdf288cfa3341b4c705ea3",
+      "at": "2026-11-27T00:10:41.706Z"
+    },
+    {
+      "label": "付ける: アイテム 7",
+      "hash": "0x8dd5d4db19db0ed59addbabf128d58657c707aede5a46ac2959f94401dab10e8",
+      "at": "2026-11-27T00:11:09.707Z"
+    },
+    {
+      "label": "付ける: アイテム 8",
+      "hash": "0x9b63e411b7606eb6775cb0e9c4ca731b923505e566bf0e2b06ec9409b903ffe9",
+      "at": "2026-11-27T00:11:22.485Z"
+    },
+    {
+      "label": "付ける: アイテム 7",
+      "hash": "0x1d329f341b8ba52fbcf2f0c7960e64d10df05acf5b2f687762df23dc156a65d7",
+      "at": "2026-11-27T00:11:50.518Z"
+    },
+    {
+      "label": "付ける: アイテム 9",
+      "hash": "0xbeac0454f5d20c7960c2eb396e587528cc988a3defe54a62db9e7b6ce5d6a5d5",
+      "at": "2026-11-27T00:11:59.849Z"
+    },
+    {
+      "label": "付ける: アイテム 10",
+      "hash": "0xf5d2c427ad5528b5467e0413c7054a1a277859e96397a763ccf49e762eb8d0e7",
+      "at": "2026-11-27T00:12:09.174Z"
+    },
+    {
+      "label": "付ける: アイテム 11",
+      "hash": "0x6d499a172b1be8769e703f18747c2e58cf4fdabbf40ce3ad9981c2874820aa17",
+      "at": "2026-11-27T00:12:21.041Z"
+    },
+    {
+      "label": "外す: 帽子",
+      "hash": "0x6ba1d5a787da1a4914fb073d4fe44977bfe6fa337e938fc062ed1faf65358cd2",
+      "at": "2026-11-27T00:20:44.613Z"
+    },
+    {
+      "label": "外す: メガネ",
+      "hash": "0xde1562f0fb0c4078144c4a2caf38b171a3ce98f43ac2f0c9cd19660dbb106cca",
+      "at": "2026-11-27T00:21:10.093Z"
+    },
+    {
+      "label": "外す: 髪色",
+      "hash": "0x212707492f3760b7537fabbcd722306a0c76c6867bdd3c263c75cfb0355594b7",
+      "at": "2026-11-27T00:22:50.518Z"
+    }
+  ]
+}

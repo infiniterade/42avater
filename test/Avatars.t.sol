@@ -145,6 +145,31 @@ contract AvatarsTest is Test {
         avatars.mint(7, rec, dl, sig);
     }
 
+    /// ERC721Enumerable: the "My avatars" screen finds every avatar of a wallet with avatarsOf().
+    function test_AvatarsOf() public {
+        _mint(alice, 7, 0);
+        caw.mintTo(alice, 8);
+        _mint(alice, 8, 1);
+        caw.mintTo(bob, 9);
+        _mint(bob, 9, 2);
+        uint256[] memory a = avatars.avatarsOf(alice);
+        assertEq(a.length, 2);
+        assertEq(a[0], 1);
+        assertEq(a[1], 2);
+        assertEq(avatars.totalSupply(), 3);
+        assertEq(avatars.tokenByIndex(2), 3);
+        vm.prank(alice);
+        avatars.transferFrom(alice, bob, 1);
+        a = avatars.avatarsOf(alice);
+        assertEq(a.length, 1);
+        assertEq(a[0], 2);
+        uint256[] memory b = avatars.avatarsOf(bob);
+        assertEq(b.length, 2);
+        assertEq(avatars.avatarsOf(address(0xdead)).length, 0);
+        assertTrue(avatars.supportsInterface(0x780e9d63)); // ERC721Enumerable
+        assertTrue(avatars.supportsInterface(0x49064906)); // ERC-4906
+    }
+
     function test_TwoCawNamesTwoAvatars() public {
         _mint(alice, 7, 0);
         caw.mintTo(alice, 8);

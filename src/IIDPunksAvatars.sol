@@ -8,6 +8,7 @@
 pragma solidity ^0.8.24;
 
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -498,7 +499,7 @@ contract IIDPunksItems is ERC1155, Ownable {
 }
 
 /// The avatar NFT. The record written at mint is never changed. Special items are equipped on top.
-contract IIDPunksAvatars is ERC721, Ownable, EIP712 {
+contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
     /// ERC-4906: tells marketplaces to refresh the picture after equipping / unequipping
     event MetadataUpdate(uint256 _tokenId);
     event Equipped(uint256 indexed tokenId, uint8 indexed slot, uint256 itemId);
@@ -516,7 +517,7 @@ contract IIDPunksAvatars is ERC721, Ownable, EIP712 {
     address public signer;          // the maker backend that checks the design rules at mint
     uint256 public price;
     uint256 public immutable maxSupply;
-    uint256 public totalSupply;
+    uint256 private _lastId;                             // ids count up from 1 (totalSupply() comes from ERC721Enumerable)
     string public constant NAME = "42gAvaterMaker";
     string public constant DESCRIPTION =
         "Pixel avatars for 42GRAM, made from IID Punks parts. One per CAW NAME. Fully on-chain.";
@@ -556,7 +557,7 @@ contract IIDPunksAvatars is ERC721, Ownable, EIP712 {
         require(cawConfigured, "CAW NAME not set yet");
         require(msg.value >= price, "price");
         require(block.timestamp <= deadline, "expired");
-        require(totalSupply < maxSupply, "sold out");
+        require(totalSupply() < maxSupply, "sold out");
         require(avatarOfCaw[cawId] == 0, "CAW NAME already used");
         if (cawNames != address(0)) require(IERC721(cawNames).ownerOf(cawId) == msg.sender, "not CAW NAME owner");
         bytes32 digest = _hashTypedDataV4(
@@ -567,7 +568,7 @@ contract IIDPunksAvatars is ERC721, Ownable, EIP712 {
         bytes32 look = renderer.lookHash(record);
         require(!lookTaken[look], "look taken");
         lookTaken[look] = true;
-        id = ++totalSupply;
+        id = ++_lastId;
         _record[id] = record;
         avatarOfCaw[cawId] = id;
         cawOfAvatar[id] = cawId;
@@ -600,6 +601,12 @@ contract IIDPunksAvatars is ERC721, Ownable, EIP712 {
     }
 
     function equippedOf(uint256 tokenId) external view returns (uint256[6] memory) { return _equipped[tokenId]; }
+
+    /// Every avatar an address holds, in one call (for the "My avatars" screen).
+    function avatarsOf(address holder) external view returns (uint256[] memory ids) {
+        ids = new uint256[](balanceOf(holder));
+        for (uint256 i = 0; i < ids.length; i++) ids[i] = tokenOfOwnerByIndex(holder, i);
+    }
 
     function recordOf(uint256 id) external view returns (bytes memory) {
         _requireOwned(id);

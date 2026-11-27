@@ -25,8 +25,9 @@
       pal: { G: "#3CA84A", R: "#D9283A", M: "#5A2E1E" },
       rows: { 16: "...................RR", 17: ".............MMGGGGRRRR", 18: "................GG.RRR" } },
     { id: 7, slot: "neck", name: "Gold Medal", ja: "金メダル", price: null, supply: null,
-      pal: { B: "#2F7BFF", Y: "#F2C230", y: "#FFE680" },
-      rows: { 21: "........B....B", 22: ".........B..B", 23: ".........YyYY" } },
+      // ribbon (blue / red) around the neck from both sides, a 5-pixel gold medal at the bottom
+      pal: { B: "#2F7BFF", R: "#E0302F", Y: "#F2C230", y: "#FFF4B0", o: "#C8961E" },
+      rows: { 20: ".....BR........RB", 21: "......BR......RB", 22: "........BRYYYRB", 23: ".........oYyYo" } },
     { id: 8, slot: "neck", name: "Knit Scarf", ja: "ニットのマフラー", price: null, supply: null,
       pal: { S: "#E0302F", s: "#F4F4F4" },
       rows: { 21: "........SSSSSS", 22: ".......SsSsSsSS", 23: ".......SSSS.SS" } },
