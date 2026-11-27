@@ -26,6 +26,24 @@ if (!process.argv.includes("--test")) {
   rep("window.__makerTest?.genesis || ", "");
   if (h.includes("__makerTest")) throw new Error("test hook left in the page");
 }
+// Fonts: subsets of DotGothic16 and Noto Sans JP (SIL OFL 1.1) made by tools/make_fonts.py, inlined so the page
+// loads nothing from other sites (no Google Fonts). Every character on the page must be in the subsets.
+if (process.argv.includes("--no-fonts")) rep("/*FONTS*/", "");
+else {
+  const fdir = path.join(__dirname, "fonts");
+  const face = (fam, file, w) => `@font-face{font-family:"${fam}";font-style:normal;font-weight:${w};font-display:swap;` +
+    `src:url(data:font/woff;base64,${fs.readFileSync(path.join(fdir, file)).toString("base64")}) format("woff")}`;
+  rep("/*FONTS*/", face("DotGothic16", "dotgothic16.woff", 400) + face("Noto Sans JP", "notosansjp-400.woff", 400) +
+    face("Noto Sans JP", "notosansjp-700.woff", 700));
+  const have = new Set(fs.readFileSync(path.join(fdir, "charset.txt"), "utf8"));
+  const page = h.replace(/url\(data:font\/woff;base64,[^)]*\)/g, "");
+  const missing = [...new Set(page)].filter(c => c.codePointAt(0) > 126 && !have.has(c) && !/\p{Extended_Pictographic}|[\u2190-\u21ff\u2014\u2026]/u.test(c));
+  if (missing.length) {
+    const msg = "characters not in the fonts (run python3 tools/make_fonts.py): " + missing.join("");
+    if (process.argv.includes("--strict")) throw new Error(msg);
+    console.warn("warning: " + msg);
+  }
+}
 const out = arg("--out") || path.join(__dirname, "dist", "index.html");
 fs.mkdirSync(path.dirname(out), { recursive: true });
 fs.writeFileSync(out, h);

@@ -42,6 +42,18 @@
 
 環境変数がないあいだは「マイアバター」が「コントラクト公開後に使えます」と表示されます。`maker/_headers` で、ほかのサイトの枠の中に表示されないようにしています（ウォレットを使うページのクリックの乗っ取り対策）。
 
+## フォント
+
+ページは外部のサイトから何も読み込みません（Google Fonts を使わない）。DotGothic16 と Noto Sans JP（どちらも SIL Open Font License 1.1、`maker/fonts/OFL-*.txt`）を、ページで使う文字だけに絞って `maker/fonts/` に置き、ビルドのときページに埋め込みます。
+
+ページの文章を変えて新しい文字が増えたら、作り直してください（fontTools が必要）。足りない文字があると `node maker/build.js --strict`（CI）が失敗します。
+
+```sh
+git clone --depth 1 --filter=blob:none --sparse https://github.com/google/fonts /tmp/gfonts
+git -C /tmp/gfonts sparse-checkout set ofl/dotgothic16 ofl/notosansjp
+python3 tools/make_fonts.py /tmp/gfonts
+```
+
 ## 管理者権限
 
 | コントラクト | だれが何をできるか |
