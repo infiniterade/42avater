@@ -38,9 +38,11 @@
 | 本番のブランチ | `main` |
 | ビルドのコマンド | `node maker/build.js` |
 | 出力のフォルダー | `maker/dist` |
-| 環境変数（本番のコントラクトを置いたあと） | `MAKER_CHAIN_RPC` = `https://evm-rpc.infinitedrive.xyz`、`MAKER_CHAIN_AVATARS` = アバターのコントラクトのアドレス |
+| 環境変数（本番のコントラクトを置いたあと） | `MAKER_CHAIN_RPC` = `https://evm-rpc.infinitedrive.xyz`、`MAKER_CHAIN_AVATARS` = アバターのコントラクト、`MAKER_CHAIN_ITEMS` = 特別アイテムのコントラクト（ページに固定し、チェーンの値と照合）、`MAKER_SIGNER_URL` = 署名サーバー（`signer/`）のアドレス。署名サーバーを入れるとミントボタンが使えるようになる |
 
-環境変数がないあいだは「マイアバター」が「コントラクト公開後に使えます」と表示されます。`maker/_headers` で、ほかのサイトの枠の中に表示されないようにしています（ウォレットを使うページのクリックの乗っ取り対策）。
+環境変数がないあいだは「マイアバター」が「コントラクト公開後に使えます」と表示され、ミントボタンは押せません。
+
+ミントは、メーカー → 本人確認の署名（MetaMask、無料）→ 署名サーバー（`signer/`。デザインのルール・CAW NAME・見た目を確かめて署名し、見た目を15分予約）→ `mint()` の順に進みます。署名サーバーの置き方は [`signer/README.md`](signer/README.md)。`maker/_headers` で、ほかのサイトの枠の中に表示されないようにしています（ウォレットを使うページのクリックの乗っ取り対策）。
 
 ## フォント
 

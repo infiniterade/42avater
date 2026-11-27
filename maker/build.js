@@ -13,12 +13,19 @@ rep("/*ITEMS*/", fs.readFileSync(t("special_items.js"), "utf8"));
 const arg = k => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : null; };
 // Cloudflare Pages (https://42avater.pages.dev): set MAKER_CHAIN_RPC and MAKER_CHAIN_AVATARS as environment variables
 // once the production contracts are live; until then the page says "available once the contract is live".
-const envChain = process.env.MAKER_CHAIN_RPC && process.env.MAKER_CHAIN_AVATARS
-  ? { rpc: process.env.MAKER_CHAIN_RPC.trim(), avatars: process.env.MAKER_CHAIN_AVATARS.trim() } : null;
+// MAKER_CHAIN_ITEMS (the items contract) and MAKER_SIGNER_URL (the signing server, signer/) are optional but should be set
+// in production: the items address is then fixed in the page, and minting is switched on.
+const env = k => (process.env[k] || "").trim();
+const envChain = env("MAKER_CHAIN_RPC") && env("MAKER_CHAIN_AVATARS")
+  ? { rpc: env("MAKER_CHAIN_RPC"), avatars: env("MAKER_CHAIN_AVATARS"), items: env("MAKER_CHAIN_ITEMS"), signer: env("MAKER_SIGNER_URL") } : null;
 if (arg("--chain") || envChain) {
   const c = envChain || JSON.parse(fs.readFileSync(arg("--chain"), "utf8"));
-  if (!/^https:\/\/|^http:\/\/(127\.0\.0\.1|localhost)[:/]/.test(c.rpc) || !/^0x[0-9a-fA-F]{40}$/.test(c.avatars)) throw new Error("bad chain settings");
-  rep('{ rpc: "", avatars: "" }', JSON.stringify({ rpc: c.rpc, avatars: c.avatars }));
+  const local = /^http:\/\/(127\.0\.0\.1|localhost)[:/]/;
+  const url = u => /^https:\/\//.test(u) || local.test(u);
+  const addr = a => /^0x[0-9a-fA-F]{40}$/.test(a);
+  if (!url(c.rpc) || !addr(c.avatars) || (c.items && !addr(c.items)) || (c.signer && !url(c.signer))) throw new Error("bad chain settings");
+  rep('{ rpc: "", avatars: "", items: "", signer: "" }',
+    JSON.stringify({ rpc: c.rpc, avatars: c.avatars, items: c.items || "", signer: (c.signer || "").replace(/\/$/, "") }));
 }
 // Test hooks (window.__makerTest: point the page at a local chain) exist only in --test builds.
 if (!process.argv.includes("--test")) {
