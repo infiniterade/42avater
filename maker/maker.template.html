@@ -1020,7 +1020,9 @@ footer a{color:#fff}
       go.disabled = MP.busy || !ok;
       // special items aren't part of the minted picture: say so, and offer to put them on right after minting
       const w = $("mpWear"), names = list => list.map(n => esc(LANG === "en" ? n : (SI.ITEMS.find(i => i.name === n) || { ja: n }).ja)).join("、");
-      const job = MP.minted && MP.minted.wear.length ? MP.minted : null, trying = eqItems().map(i => i.name);
+      const job = MP.minted && MP.minted.wear.length ? MP.minted : null;
+      // the "not part of the minted picture" note is for a design that can still be minted
+      const trying = mintedCache.get(lookOf(sel)) ? [] : eqItems().map(i => i.name);
       w.hidden = !job && !trying.length;
       const wdis = MP.busy || M.busy ? " disabled" : "";
       w.innerHTML = job ? (job.missing && job.missing.length > 1
