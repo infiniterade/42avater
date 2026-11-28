@@ -1,0 +1,35 @@
+{
+  "note": "42 Chain TEST deployment v2 (mintAndDress: mint + free launch item + equip in one transaction). Used by https://test.42avater.pages.dev and the 42avater-signer-test Worker. Not production.",
+  "chainId": 421018,
+  "deployer": "0x2493c525577701ea4833de6d08d7e86405b54200",
+  "renderer": "0x23d3549e740c87B79F4C7dc74d19EbEC5B4633E1",
+  "items": "0xFCF784Eaf75c0f513441bBc61Bd71bf5a8c059e9",
+  "avatars": "0xe69f42ac0a57ae8244481c5dDc26b8c55c947187",
+  "signer": "0x09060f1283d25ee935916d845bce52d33e6216d3",
+  "cawNames": "0xa67874FFAD0b8a0c1E587e1357fD03494518176D",
+  "launchEnd": "2026-12-28T03:06:49Z",
+  "sourceCommit": "d3b2b98",
+  "checkedOnChain": "2026-11-28: avatars.itemsContract/renderer/cawNames/signer, items.avatars, itemCount 11, owner of avatars = 0 (renounced), mintingClosed = false, totalSupply 0, maxSupply 1000000, bytecode has mintAndDress / claimLaunchFor",
+  "transactions": [
+    {
+      "label": "Renderer を置く",
+      "hash": "0xeeca2df5bdac29840311f1767cdfe761e920c4056790304b6cca0d6fdaa830b6"
+    },
+    {
+      "label": "Items を置く",
+      "hash": "0x90d8eaaedd3ec2504952e4af9d3c506fc1e490edbafeb43d04cf148524cb7441"
+    },
+    {
+      "label": "Avatars を置く",
+      "hash": "0xc20c0103936280bee5242e0f50c844c9003de5d55dbeae90bcc9914f098ce1a2"
+    },
+    {
+      "label": "setCawNames",
+      "hash": "0x8b42a2f95033ac3a15967bbdeff7218dbddb4b4def0f63cee37671e6f4914cc3"
+    },
+    {
+      "label": "setLaunch",
+      "hash": "0xfcfac86339ac112f7e1b5ecda1ebb049015ba09162ad44189172ae9e61de0824"
+    }
+  ]
+}

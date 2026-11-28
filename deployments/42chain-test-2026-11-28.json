@@ -1,5 +1,5 @@
 {
-  "note": "42 Chain TEST deployment (current contract code, test CAW NAMEs). Used by https://test.42avater.pages.dev and the 42avater-signer-test Worker. Not production.",
+  "note": "42 Chain TEST deployment (superseded on 2026-11-28 by 42chain-test-2026-11-28-v2.json: mintAndDress). Not production.",
   "chainId": 421018,
   "deployer": "0x2493c525577701ea4833de6d08d7e86405b54200",
   "renderer": "0x7ff39785c61e41d4a94c236172b6918db8909a74",
