@@ -606,14 +606,22 @@ contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
 
     /// Mint, then (optionally) claim the free launch item for the new avatar, then equip items the minter owns,
     /// all in one transaction. `giftItem` 0 = claim later. Put the gift item in `equipIds` to wear it right away.
+    /// The mint always goes through: if the gift can't be claimed (period over, sold out, ...) or an item isn't
+    /// in the wallet, that part is skipped. Read `equippedOf` / `launchClaimed` afterwards to see what happened.
     function mintAndDress(
         uint256 cawId, bytes calldata record, uint256 deadline, bytes calldata sig,
         uint256 giftItem, uint256[] calldata equipIds
     ) external returns (uint256 id) {
         require(equipIds.length <= 6, "too many items");
         id = _mintWithCaw(cawId, record, deadline, sig);
-        if (giftItem != 0) itemsContract.claimLaunchFor(msg.sender, id, giftItem);
-        for (uint256 i; i < equipIds.length; i++) _equip(id, equipIds[i]);
+        if (giftItem != 0) {
+            try itemsContract.claimLaunchFor(msg.sender, id, giftItem) {} catch {}
+        }
+        uint256 n = itemsContract.itemCount();
+        for (uint256 i; i < equipIds.length; i++) {
+            uint256 it = equipIds[i];
+            if (it >= 1 && it <= n && itemsContract.balanceOf(msg.sender, it) > 0) _equip(id, it);
+        }
     }
 
     function _mintWithCaw(uint256 cawId, bytes calldata record, uint256 deadline, bytes calldata sig)

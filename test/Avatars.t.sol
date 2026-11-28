@@ -300,7 +300,7 @@ contract AvatarsTest is Test {
     function _dress(address who, uint256 cawId, uint256 i, uint256 gift, uint256[] memory eq) internal returns (uint256) {
         if (!caw.exists(cawId)) caw.mintTo(who, cawId);
         bytes memory rec = _rec(i);
-        uint256 dl = block.timestamp + 1 hours;
+        uint256 dl = vm.getBlockTimestamp() + 1 hours;
         bytes memory sig = _sig(who, cawId, rec, dl, avatars);
         vm.prank(who);
         return avatars.mintAndDress(cawId, rec, dl, sig, gift, eq);
@@ -339,38 +339,47 @@ contract AvatarsTest is Test {
         items.claimLaunch(b, 2);
         assertEq(items.balanceOf(alice, 2), 1);
     }
-    function test_MintAndDress_allOrNothing() public {
+    function test_MintAndDress_mintAlwaysGoesThrough() public {
         _launch();
-        uint256[] memory eq = new uint256[](1);
+        uint256[] memory eq = new uint256[](2);
+        // an item alice doesn't own (5) and an id that doesn't exist (99): skipped, the mint and the gift go through
+        eq[0] = 5; eq[1] = 99;
+        uint256 a = _dress(alice, 7, 0, 1, eq);
+        assertEq(avatars.ownerOf(a), alice);
+        assertEq(avatars.equippedOf(a)[2], 0);
+        assertTrue(items.launchClaimed(a));
+        assertEq(items.balanceOf(alice, 1), 1);                        // the gift is in the wallet, not worn
+        // not a launch item: no gift, the mint goes through
+        eq = new uint256[](1); eq[0] = 99;
+        uint256 b = _dress(alice, 8, 1, 99, eq);
+        assertEq(avatars.ownerOf(b), alice);
+        assertTrue(!items.launchClaimed(b));
+        // gift period over: no gift, the mint goes through, owned items still go on
+        vm.warp(vm.getBlockTimestamp() + 8 days);
+        eq[0] = 1;                                                     // alice owns the Wizard Hat from above
+        uint256 c = _dress(alice, 9, 2, 2, eq);
+        assertTrue(!items.launchClaimed(c));
+        assertEq(avatars.equippedOf(c)[0], 1);
+        assertEq(items.balanceOf(alice, 2), 0);
+        // the same item twice: the second is skipped (the wallet has only one)
+        items.setSale(4, 0, true);
+        vm.prank(alice);
+        items.buy(4, 1);
+        eq = new uint256[](2); eq[0] = 4; eq[1] = 4;
+        uint256 d = _dress(alice, 10, 3, 0, eq);
+        assertEq(avatars.equippedOf(d)[1], 4);
+    }
+    function test_MintAndDress_permitRulesStillHold() public {
         caw.mintTo(alice, 7);
         bytes memory rec = _rec(0);
         uint256 dl = block.timestamp + 1 hours;
         bytes memory sig = _sig(alice, 7, rec, dl, avatars);
-        // an item alice doesn't own: the whole mint is undone
-        eq[0] = 5;
-        vm.prank(alice);
-        vm.expectRevert();
-        avatars.mintAndDress(7, rec, dl, sig, 1, eq);
-        assertEq(avatars.totalSupply(), 0);
-        assertEq(avatars.avatarOfCaw(7), 0);
-        // not a launch item
-        eq[0] = 1;
-        vm.prank(alice);
-        vm.expectRevert(bytes("not a launch item"));
-        avatars.mintAndDress(7, rec, dl, sig, 99, eq);
-        // gift period over
-        vm.warp(vm.getBlockTimestamp() + 8 days);
-        dl = vm.getBlockTimestamp() + 1 hours;
-        sig = _sig(alice, 7, rec, dl, avatars);
-        vm.prank(alice);
-        vm.expectRevert(bytes("launch gift closed"));
-        avatars.mintAndDress(7, rec, dl, sig, 1, eq);
-        // too many items
+        // too many items: refused before anything happens
         uint256[] memory seven = new uint256[](7);
         vm.prank(alice);
         vm.expectRevert(bytes("too many items"));
         avatars.mintAndDress(7, rec, dl, sig, 0, seven);
-        // the same permit rules as mint: someone else can't use alice's permit
+        // someone else can't use alice's permit
         vm.prank(bob);
         vm.expectRevert();
         avatars.mintAndDress(7, rec, dl, sig, 0, new uint256[](0));
