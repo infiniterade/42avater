@@ -457,16 +457,27 @@ contract IIDPunksItems is ERC1155, Ownable2Step {
 
     /// Free launch gift: one launch item of your choice per avatar. Only the avatar's owner can claim, once per avatar.
     function claimLaunch(uint256 avatarId, uint256 itemId) external {
+        _claimLaunch(msg.sender, avatarId, itemId);
+    }
+
+    /// The avatar contract claims for the minter inside mintAndDress (mint, claim and equip in one transaction).
+    /// The same rules apply: `to` must own the avatar, once per avatar, launch items only, before launchEnd.
+    function claimLaunchFor(address to, uint256 avatarId, uint256 itemId) external {
+        require(msg.sender == avatars, "only avatars");
+        _claimLaunch(to, avatarId, itemId);
+    }
+
+    function _claimLaunch(address to, uint256 avatarId, uint256 itemId) private {
         require(block.timestamp <= launchEnd, "launch gift closed");
         require(isLaunchItem[itemId], "not a launch item");
-        require(IERC721(avatars).ownerOf(avatarId) == msg.sender, "not avatar owner");
+        require(IERC721(avatars).ownerOf(avatarId) == to, "not avatar owner");
         require(!launchClaimed[avatarId], "already claimed");
         launchClaimed[avatarId] = true;
         Item storage it = items[itemId];
         require(it.maxSupply == 0 || it.minted < it.maxSupply, "sold out");
         it.minted += 1;
-        _mint(msg.sender, itemId, 1, "");
-        emit LaunchClaimed(avatarId, msg.sender, itemId);
+        _mint(to, itemId, 1, "");
+        emit LaunchClaimed(avatarId, to, itemId);
     }
 
     function buy(uint256 id, uint256 amount) external payable {
@@ -590,6 +601,24 @@ contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
     function mint(uint256 cawId, bytes calldata record, uint256 deadline, bytes calldata sig)
         external returns (uint256 id)
     {
+        id = _mintWithCaw(cawId, record, deadline, sig);
+    }
+
+    /// Mint, then (optionally) claim the free launch item for the new avatar, then equip items the minter owns,
+    /// all in one transaction. `giftItem` 0 = claim later. Put the gift item in `equipIds` to wear it right away.
+    function mintAndDress(
+        uint256 cawId, bytes calldata record, uint256 deadline, bytes calldata sig,
+        uint256 giftItem, uint256[] calldata equipIds
+    ) external returns (uint256 id) {
+        require(equipIds.length <= 6, "too many items");
+        id = _mintWithCaw(cawId, record, deadline, sig);
+        if (giftItem != 0) itemsContract.claimLaunchFor(msg.sender, id, giftItem);
+        for (uint256 i; i < equipIds.length; i++) _equip(id, equipIds[i]);
+    }
+
+    function _mintWithCaw(uint256 cawId, bytes calldata record, uint256 deadline, bytes calldata sig)
+        private returns (uint256 id)
+    {
         require(cawConfigured, "CAW NAME not set yet");
         require(!mintingClosed, "minting closed");
         require(block.timestamp <= deadline, "expired");
@@ -614,6 +643,10 @@ contract IIDPunksAvatars is ERC721Enumerable, Ownable, EIP712 {
 
     /// Equip a special item you own. If the slot already has an item, that item comes back to you.
     function equip(uint256 tokenId, uint256 itemId) external {
+        _equip(tokenId, itemId);
+    }
+
+    function _equip(uint256 tokenId, uint256 itemId) private {
         require(ownerOf(tokenId) == msg.sender, "not owner");
         require(itemId >= 1 && itemId <= itemsContract.itemCount(), "no item");
         uint8 slot = itemsContract.slotOf(itemId);

@@ -296,6 +296,96 @@ contract AvatarsTest is Test {
         assertTrue(items.isLaunchItem(3));
     }
 
+    // ---- mintAndDress: mint + free launch item + equip, one transaction ----
+    function _dress(address who, uint256 cawId, uint256 i, uint256 gift, uint256[] memory eq) internal returns (uint256) {
+        if (!caw.exists(cawId)) caw.mintTo(who, cawId);
+        bytes memory rec = _rec(i);
+        uint256 dl = block.timestamp + 1 hours;
+        bytes memory sig = _sig(who, cawId, rec, dl, avatars);
+        vm.prank(who);
+        return avatars.mintAndDress(cawId, rec, dl, sig, gift, eq);
+    }
+    function test_MintAndDress_claimsTheGiftAndEquipsOwnedItems() public {
+        _launch();
+        items.setSale(3, 0, true);
+        vm.prank(alice);
+        items.buy(3, 1);                                               // alice owns Heart Glasses
+        uint256[] memory eq = new uint256[](2);
+        eq[0] = 1; eq[1] = 3;                                          // Wizard Hat (the gift) + Heart Glasses (owned)
+        uint256 a = _dress(alice, 7, 0, 1, eq);
+        assertEq(avatars.ownerOf(a), alice);
+        uint256[6] memory w = avatars.equippedOf(a);
+        assertEq(w[0], 1); assertEq(w[1], 3);
+        assertTrue(items.launchClaimed(a));
+        assertEq(items.balanceOf(alice, 1), 0); assertEq(items.balanceOf(alice, 3), 0);
+        assertEq(items.balanceOf(address(avatars), 1), 1); assertEq(items.balanceOf(address(avatars), 3), 1);
+        // the gift is used: no second claim for this avatar
+        vm.prank(alice);
+        vm.expectRevert(bytes("already claimed"));
+        items.claimLaunch(a, 2);
+        // marketplaces still see the bare avatar
+        assertTrue(keccak256(bytes(avatars.tokenURI(a))) != keccak256(bytes(avatars.dressedTokenURI(a))));
+    }
+    function test_MintAndDress_giftOnlyOrNothing() public {
+        _launch();
+        uint256[] memory none = new uint256[](0);
+        uint256 a = _dress(alice, 7, 0, 7, none);                      // claim the Gold Medal, don't wear it yet
+        assertEq(items.balanceOf(alice, 7), 1);
+        assertEq(avatars.equippedOf(a)[3], 0);
+        caw.mintTo(alice, 8);
+        uint256 b = _dress(alice, 8, 1, 0, none);                      // plain mint: claim later
+        assertTrue(!items.launchClaimed(b));
+        vm.prank(alice);
+        items.claimLaunch(b, 2);
+        assertEq(items.balanceOf(alice, 2), 1);
+    }
+    function test_MintAndDress_allOrNothing() public {
+        _launch();
+        uint256[] memory eq = new uint256[](1);
+        caw.mintTo(alice, 7);
+        bytes memory rec = _rec(0);
+        uint256 dl = block.timestamp + 1 hours;
+        bytes memory sig = _sig(alice, 7, rec, dl, avatars);
+        // an item alice doesn't own: the whole mint is undone
+        eq[0] = 5;
+        vm.prank(alice);
+        vm.expectRevert();
+        avatars.mintAndDress(7, rec, dl, sig, 1, eq);
+        assertEq(avatars.totalSupply(), 0);
+        assertEq(avatars.avatarOfCaw(7), 0);
+        // not a launch item
+        eq[0] = 1;
+        vm.prank(alice);
+        vm.expectRevert(bytes("not a launch item"));
+        avatars.mintAndDress(7, rec, dl, sig, 99, eq);
+        // gift period over
+        vm.warp(vm.getBlockTimestamp() + 8 days);
+        dl = vm.getBlockTimestamp() + 1 hours;
+        sig = _sig(alice, 7, rec, dl, avatars);
+        vm.prank(alice);
+        vm.expectRevert(bytes("launch gift closed"));
+        avatars.mintAndDress(7, rec, dl, sig, 1, eq);
+        // too many items
+        uint256[] memory seven = new uint256[](7);
+        vm.prank(alice);
+        vm.expectRevert(bytes("too many items"));
+        avatars.mintAndDress(7, rec, dl, sig, 0, seven);
+        // the same permit rules as mint: someone else can't use alice's permit
+        vm.prank(bob);
+        vm.expectRevert();
+        avatars.mintAndDress(7, rec, dl, sig, 0, new uint256[](0));
+        assertEq(avatars.totalSupply(), 0);
+    }
+    function test_ClaimLaunchFor_onlyTheAvatarContract() public {
+        _launch();
+        uint256 a = _mint(alice, 7, 0);
+        vm.prank(alice);
+        vm.expectRevert(bytes("only avatars"));
+        items.claimLaunchFor(alice, a, 1);
+        vm.prank(bob);
+        vm.expectRevert(bytes("only avatars"));
+        items.claimLaunchFor(bob, a, 1);
+    }
     function test_LaunchGift_closedAfterEnd() public {
         _launch();
         uint256 a = _mint(alice, 7, 0);
