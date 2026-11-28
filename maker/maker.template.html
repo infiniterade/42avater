@@ -938,7 +938,7 @@ footer a{color:#fff}
         }
         M.trying = {}; MP.minted = null;
         const msg = [done.length ? t("my_done_equip", { n: done.map(nm).join("、") }) : "", skip.length ? t("mw_skip", { n: skip.map(nm).join("、") }) : "",
-          hidden.length ? t("my_invisible") + ": " + hidden.map(nm).join("、") : ""].filter(Boolean).join(" ");
+          hidden.length ? t("my_invisible") + ": " + hidden.map(nm).join("、") : ""].filter(Boolean).join("\n");
         say(msg, done.length ? "ok" : "ng");
       });
     });
