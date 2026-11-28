@@ -52,7 +52,7 @@
 | --- | --- | --- |
 | ページ | https://42avater.pages.dev（Pages の Production） | https://test.42avater.pages.dev（同じ Pages プロジェクトの Preview。`test` ブランチ） |
 | 署名サーバー | `42avater-signer`（`signer/wrangler.toml`） | `42avater-signer-test`（`signer/wrangler.test.toml`） |
-| コントラクト | これから置く | `deployments/42chain-test-2026-11-28.json` |
+| コントラクト | これから置く | `deployments/42chain-test-2026-11-28-v2.json` |
 | 署名者 | 本番用のアカウント | テスト専用のアカウント（残高なし） |
 
 Pages の環境変数は Production と Preview で別々に入れます。Preview にはテスト用の値が入っているので、プルリクエストのプレビューもテスト環境につながります。`test` ブランチは `main` と同じ中身に保ちます（`main` を更新したら `test` にも送る）。
